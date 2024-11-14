@@ -1,0 +1,80 @@
+/*
+ * ----------------------------------------------------------------------------
+ * Project: Lithium Automation Framework
+ * File: TestRunner.java
+ * Author: Brandon Peterson
+ * Date: 11/13/2024
+ * ----------------------------------------------------------------------------
+ */
+
+package com.lithium.core;
+
+import com.lithium.commands.Command;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.time.Duration;
+import java.util.logging.Logger;
+
+/**
+ * The TestRunner class is responsible for managing the WebDriver session and executing a series of commands
+ * associated with a test case. It initializes the WebDriver in either headless or maximized mode,
+ * depending on the specified options.
+ */
+public class TestRunner {
+    private static final Logger LOGGER = Logger.getLogger(TestRunner.class.getName());
+    private static final int TIMEOUT_SECONDS = 10;
+
+    private WebDriver driver;
+    private WebDriverWait wait;
+
+    private ChromeOptions options;
+
+    /**
+     * Constructs a TestRunner with specified options for headless and maximized browser settings.
+     *
+     * @param headless   If true, the WebDriver will run in headless mode (no UI display).
+     * @param maximized  If true, the WebDriver will start in maximized window mode.
+     */
+    public TestRunner(boolean headless, boolean maximized) {
+        this.options = new ChromeOptions();
+        if (headless) {
+            options.addArguments("--headless");
+        }
+        if (maximized) {
+            options.addArguments("--start-maximized");
+        }
+    }
+
+    /**
+     * Executes the commands in the provided TestCase, running on a fresh driver instance each time.
+     *
+     * @param test The TestCase containing the sequence of commands to execute.
+     */
+    public void runTest(TestCase test) {
+        try {
+            this.driver = new ChromeDriver(options);
+            this.wait = new WebDriverWait(driver, Duration.ofSeconds(TIMEOUT_SECONDS));
+            LOGGER.info("Running test: " + test.getName());
+            for (Command command : test.getCommands()) {
+                command.execute(driver, wait);
+            }
+            driver.close();
+        } catch (Exception e) {
+            LOGGER.severe("Error running test '" + test.getName() + "': " + e.getMessage());
+            close();
+            throw e;
+        }
+    }
+
+    /**
+     * Closes the WebDriver session, releasing any resources used during the test execution.
+     */
+    public void close() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+}

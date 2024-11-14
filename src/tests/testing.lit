@@ -1,0 +1,6 @@
+test "testing" {
+    open "https://www.brandonpeterson.dev/"
+    click link "Tools"
+    wait tag "input" visible 10
+    type tag "input" "Emoji"
+}
