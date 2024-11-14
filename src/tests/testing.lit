@@ -1,6 +1,7 @@
-test "testing" {
+test "Example" {
     open "https://www.brandonpeterson.dev/"
     click link "Tools"
     wait tag "input" visible 10
     type tag "input" "Emoji"
+    log info "SENT 'EMOJI' TO INPUT"
 }

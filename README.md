@@ -28,6 +28,7 @@ Lithium is still evolving, with several features planned to enhance its function
 8. **Error Handling and Retry Mechanism**: Automatically retry failed steps or tests based on configurable retry logic.
 9. **GUI for Test Execution**: Provide a graphical interface for running and monitoring tests, improving ease of use for non-technical users.
 10. **Cross-Browser Support**: Add options to run tests across multiple browsers for cross-browser testing.
+11. **Extensibility**: Support for extensions and packages.
 
 ---
 
@@ -80,15 +81,19 @@ test "Example" {
 
 - **`open "<URL>"`**: Opens the specified URL.
 - **`click <locator type> "<locator>"`**: Clicks an element specified by a locator.
-- **`wait <locator type> "<locator>" [wait type] [timeout in seconds]`**: Waits for an element based on the specified locator and optional wait type and timeout.
+- **`wait <locator type> "<locator>" <wait type?> <timeout in seconds?>`**: Waits for an element based on the specified locator and optional wait type and timeout.
     - **Wait Types** (optional): `presence`, `visible`, `clickable`.
     - **Timeout** (optional): Specifies the maximum wait time in seconds.
-    - Examples:
-        - `wait tag "input"` — waits indefinitely for the presence of an `input` element.
-        - `wait css ".search-box" visible 10` — waits up to 10 seconds for the element with class `search-box` to be visible.
-        - `wait id "submit-button" clickable 5` — waits up to 5 seconds for the element with `id="submit-button"` to be clickable.
 
 - **`type <locator type> "<locator>" "<text>"`**: Types text into an element specified by a locator.
+- **`log <log type?> "<log message>"`**: Output a message to the console with an optional log type.
+  - **Log Types** (optional): 
+    - `info`
+    - `warn`
+    - `error`
+    - `debug`
+    - `trace`
+    - `fatal`
 
 #### Locator Types
 The following locator types are supported:

@@ -10,13 +10,15 @@
 package com.lithium.core;
 
 import com.lithium.commands.Command;
+import com.lithium.commands.LogCommand;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
-import java.util.logging.Logger;
 
 /**
  * The TestRunner class is responsible for managing the WebDriver session and executing a series of commands
@@ -24,7 +26,7 @@ import java.util.logging.Logger;
  * depending on the specified options.
  */
 public class TestRunner {
-    private static final Logger LOGGER = Logger.getLogger(TestRunner.class.getName());
+    private static final Logger log = LogManager.getLogger(TestRunner.class);
     private static final int TIMEOUT_SECONDS = 10;
 
     private WebDriver driver;
@@ -57,13 +59,13 @@ public class TestRunner {
         try {
             this.driver = new ChromeDriver(options);
             this.wait = new WebDriverWait(driver, Duration.ofSeconds(TIMEOUT_SECONDS));
-            LOGGER.info("Running test: " + test.getName());
+            log.info("Running test: " + test.getName());
             for (Command command : test.getCommands()) {
                 command.execute(driver, wait);
             }
-            driver.close();
+            driver.quit();
         } catch (Exception e) {
-            LOGGER.severe("Error running test '" + test.getName() + "': " + e.getMessage());
+            log.fatal("Error running test '" + test.getName() + "': " + e.getMessage());
             close();
             throw e;
         }

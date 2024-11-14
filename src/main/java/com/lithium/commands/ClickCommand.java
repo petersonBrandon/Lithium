@@ -10,18 +10,19 @@
 package com.lithium.commands;
 
 import com.lithium.locators.Locator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import java.util.logging.Logger;
 
 /**
  * The ClickCommand class represents a command to click on a web element located by a specific locator.
  * This command waits until the element is clickable before performing the click action.
  */
 public class ClickCommand implements Command {
-    private static final Logger LOGGER = Logger.getLogger(ClickCommand.class.getName());
+    private static final Logger log = LogManager.getLogger(ClickCommand.class);
     private final Locator locator;
 
     /**
@@ -41,7 +42,7 @@ public class ClickCommand implements Command {
      */
     @Override
     public void execute(WebDriver driver, WebDriverWait wait) {
-        LOGGER.info("Clicking element: " + locator);
+        log.info("Clicking element: " + locator);
         WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator.toSeleniumBy()));
         element.click();
     }

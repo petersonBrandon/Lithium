@@ -13,13 +13,15 @@ import com.lithium.commands.*;
 import com.lithium.core.TestCase;
 import com.lithium.exceptions.TestSyntaxException;
 import com.lithium.locators.LocatorParser;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,7 +30,7 @@ import java.util.regex.Pattern;
  * It processes each line to interpret commands and build a map of test cases, which can then be executed.
  */
 public class TestParser {
-    private static final Logger LOGGER = Logger.getLogger(TestParser.class.getName());
+    private static final Logger log = LogManager.getLogger(TestParser.class);
     private static final Pattern TEST_PATTERN = Pattern.compile("test\\s+\"([^\"]+)\"\\s*\\{\\s*$");
 
     private final Map<String, TestCase> testCases;
@@ -64,7 +66,7 @@ public class TestParser {
                     String testName = testMatcher.group(1);
                     currentTest = new TestCase(testName);
                     testCases.put(testName, currentTest);
-                    LOGGER.info("Parsing test: " + testName);
+                    log.info("Parsing test: " + testName);
                 } else if (line.equals("}")) {
                     currentTest = null;
                 } else if (currentTest != null) {
@@ -92,7 +94,6 @@ public class TestParser {
      */
     private Command parseCommand(String line, int lineNumber) throws TestSyntaxException {
         try {
-            // First split to get the command type
             String[] parts = line.trim().split("\\s+", 2);
             if (parts.length < 2) {
                 throw new TestSyntaxException("Invalid command format", lineNumber);
@@ -101,7 +102,6 @@ public class TestParser {
             String command = parts[0].toLowerCase();
             String remainingArgs = parts[1];
 
-            // Parse the command based on type
             return switch (command) {
                 case "open" -> {
                     String url = extractQuotedString(remainingArgs, lineNumber);
@@ -112,7 +112,6 @@ public class TestParser {
                     yield new ClickCommand(LocatorParser.parse(clickArgs[0], clickArgs[1], lineNumber));
                 }
                 case "type" -> {
-                    // Split into locator parts and the text to type
                     String[] typeArgs = parseTypeArgs(remainingArgs, lineNumber);
                     yield new TypeCommand(
                             LocatorParser.parse(typeArgs[0], typeArgs[1], lineNumber),
@@ -127,8 +126,12 @@ public class TestParser {
                             parseTimeout(waitArgs.length > 3 ? waitArgs[3] : "30", lineNumber)
                     );
                 }
+                case "log" -> {
+                    String[] logArgs = parseLogArgs(remainingArgs, lineNumber);
+                    yield createLogCommand(logArgs, lineNumber);
+                }
                 default -> {
-                    LOGGER.warning("Unknown command at line " + lineNumber + ": " + command);
+                    log.warn("Unknown command at line " + lineNumber + ": " + command);
                     yield null;
                 }
             };
@@ -286,5 +289,108 @@ public class TestParser {
                     lineNumber
             );
         }
+    }
+
+    /**
+     * Parses arguments for the log command.
+     *
+     * @param args The argument string to parse
+     * @param lineNumber The current line number for error reporting
+     * @return Array containing [logType (optional), message]
+     * @throws TestSyntaxException if the arguments are invalid
+     */
+    private String[] parseLogArgs(String args, int lineNumber) throws TestSyntaxException {
+        args = args.trim();
+
+        // Handle case with just message
+        if (args.startsWith("\"")) {
+            return new String[]{null, extractQuotedString(args, lineNumber), null};
+        }
+
+        // Split into type and remaining parts
+        String[] parts = args.split("\\s+", 2);
+        if (parts.length != 2) {
+            throw new TestSyntaxException("Invalid log command format. Expected: log [level] \"message\" [context]", lineNumber);
+        }
+
+        String logLevel = parts[0];
+        String remaining = parts[1];
+
+        // Extract the message
+        String message = extractQuotedString(remaining, lineNumber);
+
+        // Look for context data after the message
+        int endQuotePos = remaining.indexOf("\"", remaining.indexOf("\"") + 1);
+        String contextData = null;
+        if (endQuotePos + 1 < remaining.length()) {
+            contextData = remaining.substring(endQuotePos + 1).trim();
+        }
+
+        return new String[]{logLevel, message, contextData};
+    }
+
+    /**
+     * Creates a LogCommand from the parsed arguments.
+     *
+     * @param args Array containing [logType, message]
+     * @param lineNumber The current line number for error reporting
+     * @return A LogCommand instance
+     * @throws TestSyntaxException if the log type is invalid
+     */
+    private LogCommand createLogCommand(String[] args, int lineNumber) throws TestSyntaxException {
+        String logLevel = args[0];
+        String message = args[1];
+        String contextData = args[2];
+
+        Level level = parseLogLevel(logLevel, lineNumber);
+
+        if (contextData == null || contextData.isEmpty()) {
+            return new LogCommand(message, level);
+        }
+
+        return new LogCommand(message, level, parseContextData(contextData, lineNumber));
+    }
+
+    /**
+     * Parses the log level string into a Log4j Level.
+     */
+    private Level parseLogLevel(String logLevel, int lineNumber) throws TestSyntaxException {
+        if (logLevel == null) {
+            return Level.INFO;
+        }
+
+        return switch (logLevel.toLowerCase()) {
+            case "trace" -> Level.TRACE;
+            case "debug" -> Level.DEBUG;
+            case "info" -> Level.INFO;
+            case "warn" -> Level.WARN;
+            case "error" -> Level.ERROR;
+            case "fatal" -> Level.FATAL;
+            default -> throw new TestSyntaxException(
+                    "Invalid log level '" + logLevel + "'. Valid levels are: trace, debug, info, warn, error, fatal",
+                    lineNumber
+            );
+        };
+    }
+
+    /**
+     * Parses context data string in the format "key1=value1 key2=value2" into a Map.
+     */
+    private Map<String, String> parseContextData(String contextData, int lineNumber) throws TestSyntaxException {
+        Map<String, String> result = new HashMap<>();
+        String[] pairs = contextData.split("\\s+");
+
+        for (String pair : pairs) {
+            String[] keyValue = pair.split("=", 2);
+            if (keyValue.length != 2) {
+                throw new TestSyntaxException(
+                        "Invalid context data format. Expected 'key=value', got: " + pair,
+                        lineNumber
+                );
+            }
+            result.put(keyValue[0], keyValue[1]);
+        }
+
+        return result;
     }
 }

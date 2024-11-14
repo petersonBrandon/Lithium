@@ -10,18 +10,19 @@
 package com.lithium.commands;
 
 import com.lithium.locators.Locator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import java.util.logging.Logger;
 
 /**
  * The TypeCommand class represents a command to type a specified text into a web element located by a given locator.
  * This command waits until the element is clickable, clears any existing text, and then types the specified text.
  */
 public class TypeCommand implements Command {
-    private static final Logger LOGGER = Logger.getLogger(TypeCommand.class.getName());
+    private static final Logger log = LogManager.getLogger(TypeCommand.class);
     private final Locator locator;
     private final String text;
 
@@ -45,14 +46,9 @@ public class TypeCommand implements Command {
      */
     @Override
     public void execute(WebDriver driver, WebDriverWait wait) {
-        LOGGER.info(String.format("Typing '%s' into element: %s", text, locator));
+        log.info(String.format("Typing '%s' into element: %s", text, locator));
         WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator.toSeleniumBy()));
         element.clear();
         element.sendKeys(text);
-        try{
-            Thread.sleep(2000);
-        } catch (Exception ignored) {
-
-        }
     }
 }

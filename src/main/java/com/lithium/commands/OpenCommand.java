@@ -9,16 +9,17 @@
 
 package com.lithium.commands;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import java.util.logging.Logger;
 
 /**
  * The OpenCommand class represents a command to navigate to a specified URL in the browser.
  * This command instructs the WebDriver to load the given URL.
  */
 public class OpenCommand implements Command {
-    private static final Logger LOGGER = Logger.getLogger(OpenCommand.class.getName());
+    private static final Logger log = LogManager.getLogger(OpenCommand.class);
     private final String url;
 
     /**
@@ -38,7 +39,7 @@ public class OpenCommand implements Command {
      */
     @Override
     public void execute(WebDriver driver, WebDriverWait wait) {
-        LOGGER.info("Opening URL: " + url);
+        log.info("Opening URL: " + url);
         driver.get(url);
     }
 }

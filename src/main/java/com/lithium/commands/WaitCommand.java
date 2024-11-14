@@ -10,19 +10,20 @@
 package com.lithium.commands;
 
 import com.lithium.locators.Locator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
-import java.util.logging.Logger;
 
 /**
  * The WaitCommand class represents a command to wait for the presence of a web element located by a given locator.
  * This command pauses the execution until the specified element is found in the DOM.
  */
 public class WaitCommand implements Command {
-    private static final Logger LOGGER = Logger.getLogger(WaitCommand.class.getName());
+    private static final Logger log = LogManager.getLogger(WaitCommand.class);
     private final Locator locator;
     private final WaitType waitType;
     private final long timeoutSeconds;
@@ -52,7 +53,7 @@ public class WaitCommand implements Command {
      */
     @Override
     public void execute(WebDriver driver, WebDriverWait wait) {
-        LOGGER.info("Waiting for element: " + locator + " (type: " + waitType + ", timeout: " + timeoutSeconds + "s)");
+        log.info("Waiting for element: " + locator + " (type: " + waitType + ", timeout: " + timeoutSeconds + "s)");
 
         switch (waitType) {
             case PRESENCE:
