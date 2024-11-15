@@ -121,13 +121,14 @@ The following locator types are supported:
 │   └── main
 │   │   └── java
 │   │       └── com.lithium
+│   │           ├── cli                    # CLI command structure and routing
 │   │           ├── commands               # Individual command classes like OpenCommand, ClickCommand, etc.
 │   │           ├── core                   # Core classes, e.g., TestCase, TestRunner
 │   │           ├── exceptions             # Custom exception classes, e.g., TestSyntaxException
 │   │           ├── locators               # Locator-related classes, e.g., Locator, LocatorParser
 │   │           └── parser                 # Main parsing logic, e.g., TestParser, LithiumInterpreter
 │   └── tests
-│       └── testing.lit                        # Example Lithium test file
+│       └── testing.lit                    # Example Lithium test file
 ├── target                                 # Compiled files
 └── README.md                              # Project documentation
 ```
