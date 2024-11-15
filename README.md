@@ -99,6 +99,7 @@ test "Example" {
 #### Supported Assertions
 
 - **`assertText <locator type> "<locator>" "<expected text>"`**: Validate that an element has the given text.
+- **`assertVisisble <locator type> "<locator>"`**: Validate that an element is visible.
 
 #### Locator Types
 The following locator types are supported:
