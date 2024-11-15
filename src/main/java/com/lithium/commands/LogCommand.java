@@ -1,5 +1,6 @@
 package com.lithium.commands;
 
+import com.lithium.core.TestContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Level;
@@ -64,12 +65,12 @@ public class LogCommand implements Command {
      * @param wait The WebDriverWait instance (not used in this command).
      */
     @Override
-    public void execute(WebDriver driver, WebDriverWait wait) {
+    public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
         try {
             // Add any context data to the MDC (Mapped Diagnostic Context)
             contextData.forEach(ThreadContext::put);
 
-            log.log(logLevel, message);
+            log.log(logLevel, context.resolveVariables(message));
         } finally {
             // Clean up the MDC to avoid any unintended side effects
             if (!contextData.isEmpty()) {

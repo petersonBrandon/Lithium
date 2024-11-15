@@ -80,6 +80,7 @@ test "Example" {
 #### Supported Commands
 
 - **`open "<URL>"`**: Opens the specified URL.
+- **`set <variable name> = "<value>"`**: Store a value in a variable for use later.
 - **`click <locator type> "<locator>"`**: Clicks an element specified by a locator.
 - **`wait <locator type> "<locator>" <wait type?> <timeout in seconds?>`**: Waits for an element based on the specified locator and optional wait type and timeout.
     - **Wait Types** (optional): `presence`, `visible`, `clickable`.

@@ -9,6 +9,7 @@
 
 package com.lithium.commands;
 
+import com.lithium.core.TestContext;
 import com.lithium.locators.Locator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,9 +25,9 @@ import java.time.Duration;
  */
 public class WaitCommand implements Command {
     private static final Logger log = LogManager.getLogger(WaitCommand.class);
-    private final Locator locator;
+    private Locator locator;
     private final WaitType waitType;
-    private final long timeoutSeconds;
+    private final String timeoutSeconds;
 
     public enum WaitType {
         PRESENCE,
@@ -39,7 +40,7 @@ public class WaitCommand implements Command {
      *
      * @param locator The Locator used to identify the element to wait for.
      */
-    public WaitCommand(Locator locator, WaitType waitType, long timeoutSeconds) {
+    public WaitCommand(Locator locator, WaitType waitType, String timeoutSeconds) {
         this.locator = locator;
         this.waitType = waitType;
         this.timeoutSeconds = timeoutSeconds;
@@ -52,20 +53,22 @@ public class WaitCommand implements Command {
      * @param wait   The WebDriverWait instance used to wait for the element to be present in the DOM.
      */
     @Override
-    public void execute(WebDriver driver, WebDriverWait wait) {
+    public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
         log.info("Waiting for element: " + locator + " (type: " + waitType + ", timeout: " + timeoutSeconds + "s)");
 
+        long timeout = Long.parseLong(context.resolveVariables(timeoutSeconds));
+        locator = new Locator(locator.getType(), context.resolveVariables(locator.getValue()));
         switch (waitType) {
             case PRESENCE:
-                wait.withTimeout(Duration.ofSeconds(timeoutSeconds))
+                wait.withTimeout(Duration.ofSeconds(timeout))
                         .until(ExpectedConditions.presenceOfElementLocated(locator.toSeleniumBy()));
                 break;
             case VISIBLE:
-                wait.withTimeout(Duration.ofSeconds(timeoutSeconds))
+                wait.withTimeout(Duration.ofSeconds(timeout))
                         .until(ExpectedConditions.visibilityOfElementLocated(locator.toSeleniumBy()));
                 break;
             case CLICKABLE:
-                wait.withTimeout(Duration.ofSeconds(timeoutSeconds))
+                wait.withTimeout(Duration.ofSeconds(timeout))
                         .until(ExpectedConditions.elementToBeClickable(locator.toSeleniumBy()));
                 break;
         }

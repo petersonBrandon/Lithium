@@ -58,4 +58,12 @@ public class Locator {
     public String toString() {
         return type.prefix + " \"" + value + "\"";
     }
+
+    public LocatorType getType() {
+        return type;
+    }
+
+    public String getValue() {
+        return value;
+    }
 }

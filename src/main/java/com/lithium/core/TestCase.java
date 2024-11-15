@@ -15,11 +15,13 @@ import java.util.List;
 
 /**
  * The TestCase class represents a single test case in the Lithium framework.
- * It holds the name of the test and a list of commands to be executed during the test.
+ * It holds the name of the test, a list of commands to be executed during the test,
+ * and manages the test context for variable storage and resolution.
  */
 public class TestCase {
     private final String name;
     private final List<Command> commands;
+    private final TestContext context;
 
     /**
      * Constructs a TestCase with the specified name.
@@ -29,6 +31,7 @@ public class TestCase {
     public TestCase(String name) {
         this.name = name;
         this.commands = new ArrayList<>();
+        this.context = new TestContext();
     }
 
     /**
@@ -56,5 +59,22 @@ public class TestCase {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Gets the test context associated with this test case.
+     *
+     * @return The TestContext instance for this test case.
+     */
+    public TestContext getContext() {
+        return context;
+    }
+
+    /**
+     * Clears all variables in the test context.
+     * This can be useful when needing to reset the test state.
+     */
+    public void clearContext() {
+        context.clear();
     }
 }

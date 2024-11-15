@@ -9,6 +9,7 @@
 
 package com.lithium.commands;
 
+import com.lithium.core.TestContext;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -25,5 +26,5 @@ public interface Command {
      * @param driver The WebDriver instance used to execute the command.
      * @param wait   The WebDriverWait instance used for managing wait conditions.
      */
-    void execute(WebDriver driver, WebDriverWait wait);
+    void execute(WebDriver driver, WebDriverWait wait, TestContext context);
 }

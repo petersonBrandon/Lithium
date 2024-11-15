@@ -31,7 +31,6 @@ public class TestRunner {
 
     private WebDriver driver;
     private WebDriverWait wait;
-
     private ChromeOptions options;
 
     /**
@@ -52,6 +51,7 @@ public class TestRunner {
 
     /**
      * Executes the commands in the provided TestCase, running on a fresh driver instance each time.
+     * Each command is executed with access to the test's context for variable resolution.
      *
      * @param test The TestCase containing the sequence of commands to execute.
      */
@@ -60,12 +60,17 @@ public class TestRunner {
             this.driver = new ChromeDriver(options);
             this.wait = new WebDriverWait(driver, Duration.ofSeconds(TIMEOUT_SECONDS));
             log.info("Running test: " + test.getName());
+
+            // Clear any existing variables in the context before starting
+            test.clearContext();
+
+            // Execute each command with access to the test context
             for (Command command : test.getCommands()) {
-                command.execute(driver, wait);
+                command.execute(driver, wait, test.getContext());
             }
+
             driver.quit();
         } catch (Exception e) {
-            log.fatal("Error running test '" + test.getName() + "': " + e.getMessage());
             close();
             throw e;
         }

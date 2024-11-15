@@ -1,7 +1,27 @@
 test "Example" {
-    open "https://www.brandonpeterson.dev/"
-    click link "Tools"
-    wait tag "input" visible 10
-    type tag "input" "Emoji"
-    log info "SENT 'EMOJI' TO INPUT"
+    set url = "https://www.brandonpeterson.dev/"
+    set link = "Tools"
+    set inputText = "SENT Emoji"
+    set waitTime = 5
+    set inputTag = input
+
+    open "${url}"
+    click link "${link}"
+    wait tag "${inputTag}" visible ${waitTime}
+    type tag "${inputTag}" "${link}"
+    log info "${inputText}"
+}
+
+test "Example 2" {
+    set url = "https://www.brandonpeterson.dev/"
+    set link = "Tools"
+    set inputText = "SENT Emoji"
+    set waitTime = 5
+    set inputTag = input
+
+    open "${url}"
+    click link "${link}"
+    wait tag "${inputTag}" visible ${waitTime}
+    type tag "${inputTag}" "${link}"
+    log info "${inputText}"
 }

@@ -9,6 +9,7 @@
 
 package com.lithium.commands;
 
+import com.lithium.core.TestContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.WebDriver;
@@ -38,8 +39,8 @@ public class OpenCommand implements Command {
      * @param wait   The WebDriverWait instance, not used in this command but provided for interface consistency.
      */
     @Override
-    public void execute(WebDriver driver, WebDriverWait wait) {
-        log.info("Opening URL: " + url);
-        driver.get(url);
+    public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
+        log.info("Opening URL: " + context.resolveVariables(url));
+        driver.get(context.resolveVariables(url));
     }
 }

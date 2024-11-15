@@ -9,6 +9,7 @@
 
 package com.lithium.commands;
 
+import com.lithium.core.TestContext;
 import com.lithium.locators.Locator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,7 +24,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  */
 public class ClickCommand implements Command {
     private static final Logger log = LogManager.getLogger(ClickCommand.class);
-    private final Locator locator;
+    private Locator locator;
 
     /**
      * Constructs a ClickCommand with the specified Locator.
@@ -41,7 +42,8 @@ public class ClickCommand implements Command {
      * @param wait   The WebDriverWait instance used to wait for the element to become clickable.
      */
     @Override
-    public void execute(WebDriver driver, WebDriverWait wait) {
+    public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
+        locator = new Locator(locator.getType(), context.resolveVariables(locator.getValue()));
         log.info("Clicking element: " + locator);
         WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator.toSeleniumBy()));
         element.click();
