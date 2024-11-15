@@ -9,16 +9,18 @@
 
 package com.lithium;
 
+import com.lithium.commands.ClickCommand;
 import com.lithium.core.TestCase;
 import com.lithium.core.TestRunner;
 import com.lithium.exceptions.TestSyntaxException;
 import com.lithium.parser.TestParser;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * The LithiumInterpreter class is responsible for executing Lithium test files (.lit).
@@ -26,7 +28,7 @@ import java.util.logging.Logger;
  * depending on the arguments provided.
  */
 public class LithiumInterpreter {
-    private static final Logger LOGGER = Logger.getLogger(LithiumInterpreter.class.getName());
+    private static final Logger log = LogManager.getLogger(LithiumInterpreter.class);
 
 
     /**
@@ -78,10 +80,10 @@ public class LithiumInterpreter {
                 }
             }
         } catch (TestSyntaxException e) {
-            LOGGER.severe("Syntax error: " + e.getMessage());
+            log.fatal("Syntax error: " + e.getMessage());
             System.exit(1);
         } catch (Exception e) {
-            LOGGER.severe("Error: " + e.getMessage());
+            log.fatal("Error: " + e.getMessage());
             System.exit(1);
         } finally {
             if (runner != null) {
