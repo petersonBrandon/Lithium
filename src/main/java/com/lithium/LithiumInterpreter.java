@@ -9,7 +9,6 @@
 
 package com.lithium;
 
-import com.lithium.commands.ClickCommand;
 import com.lithium.core.TestCase;
 import com.lithium.core.TestRunner;
 import com.lithium.exceptions.TestSyntaxException;
@@ -22,7 +21,6 @@ import java.io.FileNotFoundException;
 import java.time.Duration;
 import java.util.*;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 /**
  * The LithiumInterpreter class is responsible for executing Lithium test files (.lit).
@@ -106,7 +104,6 @@ public class LithiumInterpreter {
         ResultType result;
 
         log.info(SUB_SEPARATOR);
-        log.info("Executing Test: {}", test.getName());
 
         try {
             runner.runTest(test);
@@ -168,7 +165,7 @@ public class LithiumInterpreter {
             testResults.stream()
                     .filter(r -> r.result == ResultType.FAIL)
                     .forEach(r -> {
-                        log.error("\nTest Name: {}", r.testName);
+                        log.error("Test Name: {}", r.testName);
                         log.error("File: {}", r.fileName);
                         log.error("Error: {}", r.errorMessage);
                         log.error("Duration: {} ms",

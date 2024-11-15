@@ -69,7 +69,7 @@ public class TestRunner {
                 command.execute(driver, wait, test.getContext());
             }
 
-            driver.quit();
+            close();
         } catch (Exception e) {
             close();
             throw e;

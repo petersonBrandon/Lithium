@@ -54,10 +54,11 @@ public class WaitCommand implements Command {
      */
     @Override
     public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
-        log.info("Waiting for element: " + locator + " (type: " + waitType + ", timeout: " + timeoutSeconds + "s)");
-
-        long timeout = Long.parseLong(context.resolveVariables(timeoutSeconds));
         locator = new Locator(locator.getType(), context.resolveVariables(locator.getValue()));
+        long timeout = Long.parseLong(context.resolveVariables(timeoutSeconds));
+
+        log.info("Waiting for element: " + locator + " (type: " + waitType + ", timeout: " + timeout + "s)");
+
         switch (waitType) {
             case PRESENCE:
                 wait.withTimeout(Duration.ofSeconds(timeout))

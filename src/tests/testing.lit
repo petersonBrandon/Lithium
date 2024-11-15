@@ -3,21 +3,7 @@ test "Example" {
     set link = "Tools"
     set inputText = "SENT Emoji"
     set waitTime = 5
-    set inputTag = input
-
-    open "${url}"
-    click link "${link}"
-    wait tag "${inputTag}" visible ${waitTime}
-    type tag "${inputTag}" "${link}"
-    log info "${inputText}"
-}
-
-test "Example 2" {
-    set url = "https://www.brandonpeterson.dev/"
-    set link = "Tools"
-    set inputText = "SENT Emoji"
-    set waitTime = 5
-    set inputTag = input
+    set inputTag = inputasdf
 
     open "${url}"
     click link "${link}"
