@@ -98,6 +98,13 @@ public class LithiumInterpreter {
         }
     }
 
+    /**
+     * Execute a test and log the results
+     *
+     * @param runner test runner instance
+     * @param test test case to be run
+     * @param fileName test file name
+     */
     private static void runAndLogTest(TestRunner runner, TestCase test, String fileName) {
         LocalDateTime startTime = LocalDateTime.now();
         String errorMessage = null;
@@ -129,6 +136,9 @@ public class LithiumInterpreter {
         ));
     }
 
+    /**
+     * Output summary of test executions
+     */
     private static void logTestSummary() {
         int totalTests = testResults.size();
         int passedTests = (int) testResults.stream()
@@ -176,12 +186,18 @@ public class LithiumInterpreter {
         log.info(SEPARATOR);
     }
 
+    /**
+     * Test result types
+     */
     public enum ResultType {
         PASS,
         FAIL,
         SKIP
     }
 
+    /**
+     * The TestResult class handles all test result data
+     */
     private static class TestResult {
         final String fileName;
         final String testName;
@@ -190,6 +206,16 @@ public class LithiumInterpreter {
         final LocalDateTime endTime;
         final String errorMessage;
 
+        /**
+         * Construct the test result
+         *
+         * @param fileName What the test file name is.
+         * @param testName What the test name is.
+         * @param result What the test result is.
+         * @param startTime What the test start time is.
+         * @param endTime What the test end time is.
+         * @param errorMessage What is the error message is.
+         */
         TestResult(String fileName, String testName, ResultType result,
                    LocalDateTime startTime, LocalDateTime endTime, String errorMessage) {
             this.fileName = fileName;

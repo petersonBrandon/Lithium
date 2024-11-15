@@ -99,6 +99,12 @@ public class WaitCommand implements Command {
         }
     }
 
+    /**
+     * Validate timeout value
+     *
+     * @param timeoutStr The timeout string to be validated
+     * @return A parsed timout value
+     */
     private long validateAndParseTimeout(String timeoutStr) {
         try {
             long timeout = Long.parseLong(timeoutStr);
@@ -116,6 +122,11 @@ public class WaitCommand implements Command {
         }
     }
 
+    /**
+     * Perform actual wait action based on wait type
+     *
+     * @param wait wait driver
+     */
     private void waitForElement(WebDriverWait wait) {
         switch (waitType) {
             case PRESENCE:

@@ -1,12 +1,30 @@
+/*
+ * ----------------------------------------------------------------------------
+ * Project: Lithium Automation Framework
+ * File: LocatorUtils.java
+ * Author: Brandon Peterson
+ * Date: 11/14/2024
+ * ----------------------------------------------------------------------------
+ */
+
 package com.lithium.parser.utils;
 
 import com.lithium.exceptions.TestSyntaxException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
+/**
+ * Utility class for parsing and handling locator-related arguments in the
+ * Lithium Automation Framework. This class provides helper methods to extract
+ * and validate locators and their associated arguments from test script lines.
+ */
 public class LocatorUtils {
-    private static final Logger log = LogManager.getLogger(LocatorUtils.class);
-
+    /**
+     * Parses locator arguments for commands like 'click' and 'type'.
+     *
+     * @param args       the argument string containing the locator type and value
+     * @param lineNumber the line number for error reporting
+     * @return an array containing the locator type and locator value
+     * @throws TestSyntaxException if the format is invalid
+     */
     public static String[] parseLocatorArgs(String args, int lineNumber) throws TestSyntaxException {
         String[] parts = args.trim().split("\\s+", 2);
         if (parts.length != 2) {
@@ -19,6 +37,14 @@ public class LocatorUtils {
         return new String[]{locatorType, locatorValue};
     }
 
+    /**
+     * Parses arguments for the 'type' command, which includes locator type, locator value, and text to type.
+     *
+     * @param args       the argument string containing the locator and text
+     * @param lineNumber the line number for error reporting
+     * @return an array containing locator type, locator value, and text to type
+     * @throws TestSyntaxException if the format is invalid
+     */
     public static String[] parseTypeArgs(String args, int lineNumber) throws TestSyntaxException {
         String[] parts = args.trim().split("\\s+", 2);
         if (parts.length != 2) {
@@ -35,6 +61,14 @@ public class LocatorUtils {
         return new String[]{locatorType, locatorValue, textToType};
     }
 
+    /**
+     * Parses arguments for the 'wait' command, which includes locator type, locator value, wait type, and optional timeout.
+     *
+     * @param args       the argument string containing the locator and wait parameters
+     * @param lineNumber the line number for error reporting
+     * @return an array containing locator type, locator value, wait type, and optional timeout
+     * @throws TestSyntaxException if the format is invalid
+     */
     public static String[] parseWaitArgs(String args, int lineNumber) throws TestSyntaxException {
         String[] parts = args.trim().split("\\s+");
         if (parts.length < 3) {
@@ -52,11 +86,19 @@ public class LocatorUtils {
         };
     }
 
+    /**
+     * Parses arguments for the 'assertText' command, which includes locator type, locator value, and expected text.
+     *
+     * @param args       the argument string containing the locator and expected text
+     * @param lineNumber the line number for error reporting
+     * @return an array containing locator type, locator value, and expected text
+     * @throws TestSyntaxException if the format is invalid
+     */
     public static String[] parseAssertTextArgs(String args, int lineNumber) throws TestSyntaxException {
         String[] parts = args.trim().split("\\s+");
         if (parts.length != 3) {
             throw new TestSyntaxException(
-                    "Invalid assertText command format. Expected: <locator_type> \"locator\" <wait_type>",
+                    "Invalid assertText command format. Expected: <locator_type> \"locator\" <expected_text>",
                     lineNumber
             );
         }
@@ -68,11 +110,19 @@ public class LocatorUtils {
         };
     }
 
+    /**
+     * Parses arguments for element assertions such as 'assertVisible', which include locator type and locator value.
+     *
+     * @param args       the argument string containing the locator
+     * @param lineNumber the line number for error reporting
+     * @return an array containing locator type and locator value
+     * @throws TestSyntaxException if the format is invalid
+     */
     public static String[] parseAssertElementArgs(String args, int lineNumber) throws TestSyntaxException {
         String[] parts = args.trim().split("\\s+");
         if (parts.length != 2) {
             throw new TestSyntaxException(
-                    "Invalid assertText command format. Expected: <locator_type> \"locator\"",
+                    "Invalid assertVisible command format. Expected: <locator_type> \"locator\"",
                     lineNumber
             );
         }

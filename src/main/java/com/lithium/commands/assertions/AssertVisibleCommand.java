@@ -21,14 +21,34 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+/**
+ * The AssertVisibleCommand class implements the Command interface and provides
+ * functionality to assert that a specified web element is visible on the page.
+ * This command leverages Selenium's visibility condition and supports variable
+ * resolution for dynamic locators using the TestContext.
+ */
 public class AssertVisibleCommand implements Command {
     private static final Logger log = LogManager.getLogger(AssertVisibleCommand.class);
     private Locator locator;
 
+    /**
+     * Constructs an AssertVisibleCommand instance with the specified locator.
+     *
+     * @param locator the Locator object representing the element to check visibility
+     */
     public AssertVisibleCommand(Locator locator) {
         this.locator = locator;
     }
 
+    /**
+     * Executes the visibility assertion command. Verifies that the web element
+     * identified by the locator is visible on the page.
+     *
+     * @param driver  the WebDriver instance for browser interaction
+     * @param wait    the WebDriverWait instance for wait conditions
+     * @param context the TestContext for resolving dynamic variables in locators
+     * @throws AssertionFailedException if the element is not visible or an error occurs
+     */
     @Override
     public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
         try {

@@ -21,21 +21,46 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+/**
+ * The AssertTextCommand class implements the Command interface and provides
+ * functionality to assert that the text of a specified web element matches
+ * an expected value. This command supports variable resolution in locators
+ * through the provided TestContext.
+ */
 public class AssertTextCommand implements Command {
     private static final Logger log = LogManager.getLogger(AssertTextCommand.class);
     private Locator locator;
     private String expectedText;
 
+    /**
+     * Constructs an AssertTextCommand instance with the specified locator
+     * and expected text value.
+     *
+     * @param locator      the Locator object representing the element to assert
+     * @param expectedText the expected text value for the element
+     */
     public AssertTextCommand(Locator locator, String expectedText) {
         this.locator = locator;
         this.expectedText = expectedText;
     }
 
+    /**
+     * Executes the text assertion command. Verifies that the text of the web
+     * element identified by the locator matches the expected value.
+     *
+     * @param driver  the WebDriver instance for browser interaction
+     * @param wait    the WebDriverWait instance for element wait conditions
+     * @param context the TestContext for variable resolution in locators
+     * @throws RuntimeException if an AssertionFailedException or other
+     *                          exception occurs during execution
+     */
     @Override
     public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
         try {
+            // Resolve dynamic variables in the locator
             locator = new Locator(locator.getType(), context.resolveVariables(locator.getValue()));
 
+            // Locate the web element and assert its text
             WebElement element = wait.until(
                     ExpectedConditions.presenceOfElementLocated(locator.toSeleniumBy())
             );
@@ -47,6 +72,8 @@ public class AssertTextCommand implements Command {
                         locator.getValue(), expectedText, actualText
                 ));
             }
+
+            // Log successful assertion
             log.info("Asserted element '{} {}' text equals '{}'", locator.getType(), locator.getValue(), expectedText);
         } catch (AssertionFailedException e) {
             throw new RuntimeException(e);

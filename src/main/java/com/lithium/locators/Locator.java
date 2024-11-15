@@ -59,10 +59,20 @@ public class Locator {
         return type.prefix + " \"" + value + "\"";
     }
 
+    /**
+     * Get the type of locator
+     *
+     * @return LocatorType
+     */
     public LocatorType getType() {
         return type;
     }
 
+    /**
+     * Get the value of a locator
+     *
+     * @return the locator value
+     */
     public String getValue() {
         return value;
     }

@@ -1,3 +1,12 @@
+/*
+ * ----------------------------------------------------------------------------
+ * Project: Lithium Automation Framework
+ * File: CommandParser.java
+ * Author: Brandon Peterson
+ * Date: 11/14/2024
+ * ----------------------------------------------------------------------------
+ */
+
 package com.lithium.parser;
 
 import com.lithium.commands.*;
@@ -12,9 +21,23 @@ import com.lithium.parser.utils.WaitUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * The CommandParser class is responsible for parsing script commands in the
+ * Lithium Automation Framework. It reads a single line of a test script, interprets
+ * the command and its arguments, and returns the corresponding Command object
+ * for execution.
+ */
 public class CommandParser {
     private static final Logger log = LogManager.getLogger(CommandParser.class);
 
+    /**
+     * Parses a single script command line and returns the corresponding Command object.
+     *
+     * @param line       the script line containing the command and arguments
+     * @param lineNumber the line number of the script (for error reporting)
+     * @return the parsed Command object
+     * @throws TestSyntaxException if the command syntax is invalid
+     */
     public Command parseCommand(String line, int lineNumber) throws TestSyntaxException {
         String[] parts = line.trim().split("\\s+", 2);
         if (parts.length < 2) {
