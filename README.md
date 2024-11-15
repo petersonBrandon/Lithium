@@ -96,6 +96,10 @@ test "Example" {
     - `trace`
     - `fatal`
 
+#### Supported Assertions
+
+- **`assertText <locator type> "<locator>" "<expected text>"`**: Validate that an element has the given text.
+
 #### Locator Types
 The following locator types are supported:
 - `id`
