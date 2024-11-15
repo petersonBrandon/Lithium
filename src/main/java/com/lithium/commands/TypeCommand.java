@@ -10,11 +10,11 @@
 package com.lithium.commands;
 
 import com.lithium.core.TestContext;
+import com.lithium.exceptions.CommandException;
 import com.lithium.locators.Locator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -47,10 +47,96 @@ public class TypeCommand implements Command {
      */
     @Override
     public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
-        locator = new Locator(locator.getType(), context.resolveVariables(locator.getValue()));
-        log.info(String.format("Typing '%s' into element: %s", text, locator));
-        WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator.toSeleniumBy()));
-        element.clear();
-        element.sendKeys(context.resolveVariables(text));
+        try {
+            // Resolve variables in locator and text
+            locator = new Locator(locator.getType(), context.resolveVariables(locator.getValue()));
+            String resolvedText = context.resolveVariables(text);
+
+            log.info("Typing '{}' into element: {} {}",
+                    resolvedText, locator.getType(), locator.getValue());
+
+            // Wait for element and verify it's interactive
+            WebElement element = waitForInteractiveElement(wait);
+
+            // Clear existing text
+            try {
+                element.clear();
+            } catch (InvalidElementStateException e) {
+                log.warn("Unable to clear element before typing. Element might be read-only or not clearable. Proceeding with type operation.");
+            }
+
+            // Type the text
+            element.sendKeys(resolvedText);
+
+            // Verify the text was entered correctly
+            verifyTextEntered(element, resolvedText);
+
+        } catch (TimeoutException e) {
+            String errorMsg = String.format(
+                    "Timeout waiting for element to be clickable: %s %s",
+                    locator.getType(), locator.getValue()
+            );
+            throw new CommandException(errorMsg);
+
+        } catch (ElementNotInteractableException e) {
+            String errorMsg = String.format(
+                    "Element not interactable: %s %s",
+                    locator.getType(), locator.getValue()
+            );
+            throw new CommandException(errorMsg);
+
+        } catch (StaleElementReferenceException e) {
+            String errorMsg = String.format(
+                    "Element became stale: %s %s",
+                    locator.getType(), locator.getValue()
+            );
+            throw new CommandException(errorMsg);
+
+        } catch (Exception e) {
+            String errorMsg = String.format(
+                    "Failed to type text into element: %s %s",
+                    locator.getType(), locator.getValue()
+            );
+            throw new CommandException(errorMsg);
+        }
+    }
+
+    /**
+     * Wait for element to be clickable
+     *
+     * @param wait Wait driver
+     * @return the webElement
+     */
+    private WebElement waitForInteractiveElement(WebDriverWait wait) {
+        try {
+            return wait.until(ExpectedConditions.elementToBeClickable(locator.toSeleniumBy()));
+        } catch (TimeoutException e) {
+            throw new TimeoutException(String.format(
+                    "Element not clickable within timeout: %s %s",
+                    locator.getType(), locator.getValue()
+            ));
+        }
+    }
+
+    /**
+     * Validate the text that was sent
+     *
+     * @param element Element that the text was sent to
+     * @param expectedText Text that is to be verified
+     */
+    private void verifyTextEntered(WebElement element, String expectedText) {
+        try {
+            String actualValue = element.getAttribute("value");
+            if (actualValue == null) {
+                actualValue = element.getText();
+            }
+
+            if (!actualValue.contains(expectedText)) {
+                log.warn("Typed text verification failed. Expected text '{}' not found in element. Actual text: '{}'",
+                        expectedText, actualValue);
+            }
+        } catch (Exception e) {
+            log.warn("Unable to verify typed text: {}", e.getMessage());
+        }
     }
 }

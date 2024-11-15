@@ -1,20 +1,25 @@
+/*
+ * ----------------------------------------------------------------------------
+ * Project: Lithium Automation Framework
+ * File: AssertTextCommand.java
+ * Author: Brandon Peterson
+ * Date: 11/14/2024
+ * ----------------------------------------------------------------------------
+ */
+
 package com.lithium.commands.assertions;
 
 import com.lithium.commands.Command;
-import com.lithium.commands.WaitCommand;
 import com.lithium.core.TestContext;
 import com.lithium.exceptions.AssertionFailedException;
 import com.lithium.locators.Locator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.openqa.selenium.By;
-import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
-import java.time.Duration;
 
 public class AssertTextCommand implements Command {
     private static final Logger log = LogManager.getLogger(AssertTextCommand.class);
@@ -42,8 +47,19 @@ public class AssertTextCommand implements Command {
                         locator.getValue(), expectedText, actualText
                 ));
             }
+            log.info("Asserted element '{} {}' text equals '{}'", locator.getType(), locator.getValue(), expectedText);
         } catch (AssertionFailedException e) {
             throw new RuntimeException(e);
+        } catch (NoSuchElementException e) {
+            throw new AssertionFailedException(String.format(
+                    "Element with locator '%s %s' was not found",
+                    locator.getType(), locator.getValue()
+            ));
+        } catch (Exception e) {
+            throw new AssertionFailedException(String.format(
+                    "Unable to assert text of element with locator '%s %s'",
+                    locator.getType(), locator.getValue()
+            ));
         }
     }
 }

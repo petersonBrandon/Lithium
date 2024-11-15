@@ -1,16 +1,16 @@
 /*
  * ----------------------------------------------------------------------------
  * Project: Lithium Automation Framework
- * File: AssertionFailedException.java
+ * File: CommandException.java
  * Author: Brandon Peterson
- * Date: 11/13/2024
+ * Date: 11/15/2024
  * ----------------------------------------------------------------------------
  */
 
 package com.lithium.exceptions;
 
-public class AssertionFailedException extends RuntimeException {
-    public AssertionFailedException(String message) {
+public class CommandException extends RuntimeException {
+    public CommandException(String message) {
         super(message);
     }
 }

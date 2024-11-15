@@ -2,6 +2,7 @@ package com.lithium.parser;
 
 import com.lithium.commands.*;
 import com.lithium.commands.assertions.AssertTextCommand;
+import com.lithium.commands.assertions.AssertVisibleCommand;
 import com.lithium.exceptions.TestSyntaxException;
 import com.lithium.locators.LocatorParser;
 import com.lithium.parser.utils.LocatorUtils;
@@ -31,6 +32,7 @@ public class CommandParser {
             case "log" -> parseLogCommand(remainingArgs, lineNumber);
             case "set" -> parseSetCommand(remainingArgs, lineNumber);
             case "assertText" -> parseAssertTextCommand(remainingArgs, lineNumber);
+            case "assertVisible" -> parseAssertVisibleCommand(remainingArgs, lineNumber);
             default -> null;
         };
     }
@@ -79,7 +81,7 @@ public class CommandParser {
     }
 
     private AssertTextCommand parseAssertTextCommand(String args, int lineNumber) throws TestSyntaxException {
-        String[] parts = LocatorUtils.parseAssertArgs(args, lineNumber);
+        String[] parts = LocatorUtils.parseAssertTextArgs(args, lineNumber);
         if (parts.length != 3) {
             throw new TestSyntaxException("Invalid assertText command format. Expected: assertText <locator type> \"<locator>\" \"<expected text>\"", lineNumber);
         }
@@ -87,5 +89,13 @@ public class CommandParser {
             parts[2] = parts[2].substring(1, parts[2].length() - 1);
         }
         return new AssertTextCommand(LocatorParser.parse(parts[0], parts[1], lineNumber), parts[2]);
+    }
+
+    private AssertVisibleCommand parseAssertVisibleCommand(String args, int lineNumber) throws TestSyntaxException {
+        String[] parts = LocatorUtils.parseAssertElementArgs(args, lineNumber);
+        if (parts.length != 2) {
+            throw new TestSyntaxException("Invalid assertText command format. Expected: assertText <locator type> \"<locator>\"", lineNumber);
+        }
+        return new AssertVisibleCommand(LocatorParser.parse(parts[0], parts[1], lineNumber));
     }
 }

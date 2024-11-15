@@ -10,11 +10,11 @@
 package com.lithium.commands;
 
 import com.lithium.core.TestContext;
+import com.lithium.exceptions.CommandException;
 import com.lithium.locators.Locator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -43,9 +43,41 @@ public class ClickCommand implements Command {
      */
     @Override
     public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
-        locator = new Locator(locator.getType(), context.resolveVariables(locator.getValue()));
-        log.info("Clicking element: " + locator);
-        WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator.toSeleniumBy()));
-        element.click();
+        try {
+            locator = new Locator(locator.getType(), context.resolveVariables(locator.getValue()));
+            log.info("Clicking element: {}", locator);
+            WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator.toSeleniumBy()));
+            element.click();
+        } catch (NoSuchElementException e) {
+            throw new CommandException(String.format(
+                    "Element not found: '%s %s'",
+                    locator.getType(),
+                    locator.getValue()
+            ));
+        } catch (StaleElementReferenceException e) {
+            throw new CommandException(String.format(
+                    "Stale element reference for: '%s %s'",
+                    locator.getType(),
+                    locator.getValue()
+            ));
+        } catch (ElementClickInterceptedException e) {
+            throw new CommandException(String.format(
+                    "Element click intercepted for: '%s %s'",
+                    locator.getType(),
+                    locator.getValue()
+            ));
+        } catch (TimeoutException e) {
+            throw new CommandException(String.format(
+                    "Timeout waiting for clickable element: '%s %s'",
+                    locator.getType(),
+                    locator.getValue()
+            ));
+        } catch (Exception e) {
+            throw new CommandException(String.format(
+                    "Unable to click element: '%s %s'",
+                    locator.getType(),
+                    locator.getValue()
+            ));
+        }
     }
 }

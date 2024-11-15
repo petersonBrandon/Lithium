@@ -11,4 +11,5 @@ test "Example" {
     type tag "${inputTag}" "${link}"
     log info "${inputText}"
     assertText xpath "//*[@href='/projects']" "Projects"
+    assertVisible link "Projects"
 }

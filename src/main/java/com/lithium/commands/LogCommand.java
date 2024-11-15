@@ -1,6 +1,7 @@
 package com.lithium.commands;
 
 import com.lithium.core.TestContext;
+import com.lithium.exceptions.CommandException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Level;
@@ -71,6 +72,11 @@ public class LogCommand implements Command {
             contextData.forEach(ThreadContext::put);
 
             log.log(logLevel, context.resolveVariables(message));
+        } catch (Exception e) {
+            throw new CommandException(String.format(
+                    "Failed to execute log command. Message: '%s', LogLevel: '%s'",
+                    message, logLevel
+            ));
         } finally {
             // Clean up the MDC to avoid any unintended side effects
             if (!contextData.isEmpty()) {

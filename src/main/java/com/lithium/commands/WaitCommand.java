@@ -10,9 +10,12 @@
 package com.lithium.commands;
 
 import com.lithium.core.TestContext;
+import com.lithium.exceptions.CommandException;
 import com.lithium.locators.Locator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openqa.selenium.InvalidSelectorException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -25,6 +28,7 @@ import java.time.Duration;
  */
 public class WaitCommand implements Command {
     private static final Logger log = LogManager.getLogger(WaitCommand.class);
+    private static final long MAX_TIMEOUT = 300;
     private Locator locator;
     private final WaitType waitType;
     private final String timeoutSeconds;
@@ -54,24 +58,77 @@ public class WaitCommand implements Command {
      */
     @Override
     public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
-        locator = new Locator(locator.getType(), context.resolveVariables(locator.getValue()));
-        long timeout = Long.parseLong(context.resolveVariables(timeoutSeconds));
+        try {
+            // Resolve variables
+            locator = new Locator(locator.getType(), context.resolveVariables(locator.getValue()));
+            long timeout = validateAndParseTimeout(context.resolveVariables(timeoutSeconds));
 
-        log.info("Waiting for element: " + locator + " (type: " + waitType + ", timeout: " + timeout + "s)");
+            log.info("Waiting for element to be {}: {} {} (timeout: {}s)",
+                    waitType, locator.getType(), locator.getValue(), timeout);
 
+            WebDriverWait customWait = new WebDriverWait(driver, Duration.ofSeconds(timeout));
+            waitForElement(customWait);
+
+        } catch (TimeoutException e) {
+            String errorMsg = String.format(
+                    "Timeout waiting for element to be %s: %s %s",
+                    waitType, locator.getType(), locator.getValue()
+            );
+            throw new CommandException(errorMsg);
+
+        } catch (InvalidSelectorException e) {
+            String errorMsg = String.format(
+                    "Invalid selector for element: %s %s",
+                    locator.getType(), locator.getValue()
+            );
+            throw new CommandException(errorMsg);
+
+        } catch (NumberFormatException e) {
+            String errorMsg = String.format(
+                    "Invalid timeout value: %s",
+                    timeoutSeconds
+            );
+            throw new CommandException(errorMsg);
+
+        } catch (Exception e) {
+            String errorMsg = String.format(
+                    "Unexpected error while waiting for element: %s %s",
+                    locator.getType(), locator.getValue()
+            );
+            throw new CommandException(errorMsg);
+        }
+    }
+
+    private long validateAndParseTimeout(String timeoutStr) {
+        try {
+            long timeout = Long.parseLong(timeoutStr);
+            if (timeout <= 0) {
+                throw new IllegalArgumentException("Timeout must be greater than 0");
+            }
+            if (timeout > MAX_TIMEOUT) {
+                log.warn("Specified timeout {}s exceeds maximum allowed ({}s). Using maximum timeout.",
+                        timeout, MAX_TIMEOUT);
+                return MAX_TIMEOUT;
+            }
+            return timeout;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid timeout format: " + timeoutStr);
+        }
+    }
+
+    private void waitForElement(WebDriverWait wait) {
         switch (waitType) {
             case PRESENCE:
-                wait.withTimeout(Duration.ofSeconds(timeout))
-                        .until(ExpectedConditions.presenceOfElementLocated(locator.toSeleniumBy()));
+                wait.until(ExpectedConditions.presenceOfElementLocated(locator.toSeleniumBy()));
                 break;
             case VISIBLE:
-                wait.withTimeout(Duration.ofSeconds(timeout))
-                        .until(ExpectedConditions.visibilityOfElementLocated(locator.toSeleniumBy()));
+                wait.until(ExpectedConditions.visibilityOfElementLocated(locator.toSeleniumBy()));
                 break;
             case CLICKABLE:
-                wait.withTimeout(Duration.ofSeconds(timeout))
-                        .until(ExpectedConditions.elementToBeClickable(locator.toSeleniumBy()));
+                wait.until(ExpectedConditions.elementToBeClickable(locator.toSeleniumBy()));
                 break;
+            default:
+                throw new IllegalStateException("Unexpected wait type: " + waitType);
         }
     }
 }

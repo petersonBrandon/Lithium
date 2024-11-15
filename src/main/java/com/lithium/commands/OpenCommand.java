@@ -10,10 +10,17 @@
 package com.lithium.commands;
 
 import com.lithium.core.TestContext;
+import com.lithium.exceptions.CommandException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 /**
  * The OpenCommand class represents a command to navigate to a specified URL in the browser.
@@ -40,7 +47,60 @@ public class OpenCommand implements Command {
      */
     @Override
     public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
-        log.info("Opening URL: " + context.resolveVariables(url));
-        driver.get(context.resolveVariables(url));
+        String resolvedUrl = context.resolveVariables(url);
+        log.info("Opening URL: {}", resolvedUrl);
+
+        if (resolvedUrl == null || resolvedUrl.trim().isEmpty()) {
+            throw new IllegalArgumentException("URL cannot be null or empty");
+        }
+
+        try {
+            // Validate URL format
+            validateUrl(resolvedUrl);
+
+            driver.get(resolvedUrl);
+        } catch (TimeoutException e) {
+            String errorMsg = String.format("Timeout while loading URL: %s", resolvedUrl);
+            throw new CommandException(errorMsg);
+
+        } catch (WebDriverException e) {
+            String errorMsg = String.format("Failed to load URL: %s",
+                    resolvedUrl);
+            throw new CommandException(errorMsg);
+
+        } catch (IllegalArgumentException | CommandException e) {
+            throw new CommandException(e.getMessage());
+
+        } catch (Exception e) {
+            String errorMsg = String.format("Unexpected error while opening URL: %s",
+                    resolvedUrl);
+            throw new CommandException(errorMsg);
+        }
+    }
+
+    /**
+     * Validates URL string
+     * @param urlString url to be validated
+     * @throws CommandException exception error
+     */
+    private void validateUrl(String urlString) throws CommandException {
+        try {
+            URL url = new URL(urlString);
+            // Additional validation by attempting to create URI
+            url.toURI();
+
+            // Check for supported protocols
+            String protocol = url.getProtocol().toLowerCase();
+            if (!protocol.equals("http") && !protocol.equals("https")) {
+                throw new CommandException(
+                        String.format("Unsupported protocol: %s. Only HTTP and HTTPS are supported.",
+                                protocol)
+                );
+            }
+
+        } catch (MalformedURLException | URISyntaxException e) {
+            String errorMsg = String.format("Invalid URL format: %s", urlString);
+            throw new CommandException(errorMsg);
+        }
     }
 }

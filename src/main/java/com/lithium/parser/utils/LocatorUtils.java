@@ -52,7 +52,7 @@ public class LocatorUtils {
         };
     }
 
-    public static String[] parseAssertArgs(String args, int lineNumber) throws TestSyntaxException {
+    public static String[] parseAssertTextArgs(String args, int lineNumber) throws TestSyntaxException {
         String[] parts = args.trim().split("\\s+");
         if (parts.length != 3) {
             throw new TestSyntaxException(
@@ -65,6 +65,21 @@ public class LocatorUtils {
                 parts[0],
                 StringUtils.extractQuotedString(parts[1], lineNumber),
                 parts[2],
+        };
+    }
+
+    public static String[] parseAssertElementArgs(String args, int lineNumber) throws TestSyntaxException {
+        String[] parts = args.trim().split("\\s+");
+        if (parts.length != 2) {
+            throw new TestSyntaxException(
+                    "Invalid assertText command format. Expected: <locator_type> \"locator\"",
+                    lineNumber
+            );
+        }
+
+        return new String[]{
+                parts[0],
+                StringUtils.extractQuotedString(parts[1], lineNumber),
         };
     }
 }
