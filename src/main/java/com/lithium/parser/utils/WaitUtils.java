@@ -9,7 +9,7 @@
 
 package com.lithium.parser.utils;
 
-import com.lithium.commands.WaitCommand;
+import com.lithium.commands.wait.WaitCommand;
 import com.lithium.exceptions.TestSyntaxException;
 
 /**

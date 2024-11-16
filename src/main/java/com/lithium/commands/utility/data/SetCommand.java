@@ -7,8 +7,9 @@
  * ----------------------------------------------------------------------------
  */
 
-package com.lithium.commands;
+package com.lithium.commands.utility.data;
 
+import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

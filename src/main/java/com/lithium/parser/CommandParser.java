@@ -10,9 +10,14 @@
 package com.lithium.parser;
 
 import com.lithium.commands.*;
-import com.lithium.commands.assertions.AssertTextCommand;
+import com.lithium.commands.assertions.text.AssertTextCommand;
 import com.lithium.commands.assertions.AssertURLCommand;
-import com.lithium.commands.assertions.AssertVisibleCommand;
+import com.lithium.commands.assertions.element.AssertVisibleCommand;
+import com.lithium.commands.interaction.ClickCommand;
+import com.lithium.commands.interaction.TypeCommand;
+import com.lithium.commands.navigation.OpenCommand;
+import com.lithium.commands.utility.data.SetCommand;
+import com.lithium.commands.wait.WaitCommand;
 import com.lithium.exceptions.TestSyntaxException;
 import com.lithium.locators.LocatorParser;
 import com.lithium.parser.utils.*;

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------------
  */
 
-package com.lithium.commands.assertions;
+package com.lithium.commands.assertions.element;
 
 import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
