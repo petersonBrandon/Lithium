@@ -10,6 +10,7 @@ test "Example" {
 
     click link "${link}";
     back;
+    refresh;
 
     assertURL "${url}";
     click link "${link}";

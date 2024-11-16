@@ -69,6 +69,7 @@ public class CommandParser {
             case "open" -> NavigationParser.parseOpenCommand(remainingArgs, lineNumber);
             case "back" -> NavigationParser.parseBackCommand(remainingArgs, lineNumber);
             case "forward" -> NavigationParser.parseForwardCommand(remainingArgs, lineNumber);
+            case "refresh" -> NavigationParser.parseRefreshCommand(remainingArgs, lineNumber);
 
             // Utility
 
