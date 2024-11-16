@@ -1,3 +1,12 @@
+/*
+ * ----------------------------------------------------------------------------
+ * Project: Lithium Automation Framework
+ * File: BackCommand.java
+ * Author: Brandon Peterson
+ * Date: 11/15/2024
+ * ----------------------------------------------------------------------------
+ */
+
 package com.lithium.commands.navigation;
 
 import com.lithium.commands.Command;
