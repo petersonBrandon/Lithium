@@ -26,12 +26,41 @@ public class StringUtils {
      * @throws TestSyntaxException if no matching pair of quotes is found
      */
     public static String extractQuotedString(String input, int lineNumber) throws TestSyntaxException {
-        int start = input.indexOf("\"");
-        int end = input.indexOf("\"", start + 1);
-        if (start == -1 || end == -1) {
-            throw new TestSyntaxException("Missing quotes in command", lineNumber);
+        StringBuilder result = new StringBuilder();
+        int currentPos = 0;
+
+        while (currentPos < input.length()) {
+            // Find next quoted string
+            int start = input.indexOf("\"", currentPos);
+            int end = start != -1 ? input.indexOf("\"", start + 1) : -1;
+
+            if (start == -1 || end == -1) {
+                throw new TestSyntaxException("Missing quotes in command", lineNumber);
+            }
+
+            // Add the quoted string to result
+            result.append(input.substring(start + 1, end));
+
+            // Move position after the closing quote
+            currentPos = end + 1;
+
+            // Look for + operator
+            while (currentPos < input.length() && Character.isWhitespace(input.charAt(currentPos))) {
+                currentPos++;
+            }
+
+            if (currentPos < input.length() && input.charAt(currentPos) == '+') {
+                currentPos++; // Skip the +
+                // Skip whitespace after +
+                while (currentPos < input.length() && Character.isWhitespace(input.charAt(currentPos))) {
+                    currentPos++;
+                }
+            } else {
+                break; // No more concatenations
+            }
         }
-        return input.substring(start + 1, end);
+
+        return result.toString();
     }
 
     /**
