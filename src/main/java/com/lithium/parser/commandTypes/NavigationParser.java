@@ -50,4 +50,9 @@ public class NavigationParser {
         List<String> tokens = CommandArgParser.parseArgs(args, ArgPattern.TEXT_ONLY, lineNumber);
         return new OpenTabCommand(tokens.getFirst());
     }
+
+    public static CloseTabCommand parseCloseTabCommand(String args, int lineNumber) throws TestSyntaxException {
+        CommandArgParser.parseArgs(args, ArgPattern.NONE, lineNumber);
+        return new CloseTabCommand();
+    }
 }

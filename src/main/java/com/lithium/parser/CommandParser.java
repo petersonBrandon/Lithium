@@ -72,6 +72,7 @@ public class CommandParser {
             case "refresh" -> NavigationParser.parseRefreshCommand(remainingArgs, lineNumber);
             case "switchToWindow" -> NavigationParser.parseSwitchToWindowCommand(remainingArgs, lineNumber);
             case "openTab" -> NavigationParser.parseOpenTabCommand(remainingArgs, lineNumber);
+            case "closeTab" -> NavigationParser.parseCloseTabCommand(remainingArgs, lineNumber);
 
             // Utility
 

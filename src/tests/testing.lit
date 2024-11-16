@@ -26,4 +26,8 @@ test "Example" {
     switchToWindow "Brandon Peterson - Portfolio";
     back;
     assertURL "${url}";
+
+    switchToWindow 2;
+    closeTab;
+    assertURL "${url}";
 }
