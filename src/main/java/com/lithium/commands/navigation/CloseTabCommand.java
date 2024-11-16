@@ -96,9 +96,6 @@ public class CloseTabCommand implements Command {
                             handleToClose = handle;
                             windowFound = true;
                             // Switch back to original window if we're not closing it
-                            if (!handle.equals(handleToClose)) {
-                                driver.switchTo().window(originalHandle);
-                            }
                             break;
                         }
                         driver.switchTo().window(originalHandle);
@@ -127,7 +124,7 @@ public class CloseTabCommand implements Command {
             Set<String> remainingHandles = driver.getWindowHandles();
             if (!remainingHandles.isEmpty()) {
                 ArrayList<String> handlesList = new ArrayList<>(remainingHandles);
-                String newHandle = handlesList.get(handlesList.size() - 1);
+                String newHandle = handlesList.getLast();
                 driver.switchTo().window(newHandle);
                 log.info("Switched to remaining window");
             } else {
