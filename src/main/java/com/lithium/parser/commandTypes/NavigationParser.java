@@ -10,6 +10,7 @@
 package com.lithium.parser.commandTypes;
 
 import com.lithium.commands.navigation.BackCommand;
+import com.lithium.commands.navigation.ForwardCommand;
 import com.lithium.commands.navigation.OpenCommand;
 import com.lithium.exceptions.TestSyntaxException;
 import com.lithium.parser.utils.ArgPattern;
@@ -30,5 +31,10 @@ public class NavigationParser {
     public static BackCommand parseBackCommand(String args, int lineNumber) throws TestSyntaxException {
         CommandArgParser.parseArgs(args, ArgPattern.NONE, lineNumber);
         return new BackCommand();
+    }
+
+    public static ForwardCommand parseForwardCommand(String args, int lineNumber) throws TestSyntaxException {
+        CommandArgParser.parseArgs(args, ArgPattern.NONE, lineNumber);
+        return new ForwardCommand();
     }
 }
