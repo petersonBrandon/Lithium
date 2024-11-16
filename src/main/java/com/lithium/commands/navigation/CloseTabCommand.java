@@ -117,7 +117,7 @@ public class CloseTabCommand implements Command {
             if(windowIdentifier != null) {
                 log.info("Successfully closed window {}", windowIdentifier);
             } else {
-                log.info("Successfully closed current window");
+                log.info("Closed current window");
             }
 
             // Switch to the last remaining window if there are any

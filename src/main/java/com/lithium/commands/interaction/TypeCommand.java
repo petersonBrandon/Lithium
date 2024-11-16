@@ -53,9 +53,6 @@ public class TypeCommand implements Command {
             locator = new Locator(locator.getType(), context.resolveVariables(locator.getValue()));
             String resolvedText = context.resolveVariables(text);
 
-            log.info("Typing '{}' into element: {} {}",
-                    resolvedText, locator.getType(), locator.getValue());
-
             // Wait for element and verify it's interactive
             WebElement element = waitForInteractiveElement(wait);
 
@@ -71,6 +68,9 @@ public class TypeCommand implements Command {
 
             // Verify the text was entered correctly
             verifyTextEntered(element, resolvedText);
+
+            log.info("Typed '{}' into element: {} {}",
+                    resolvedText, locator.getType(), locator.getValue());
 
         } catch (TimeoutException e) {
             String errorMsg = String.format(

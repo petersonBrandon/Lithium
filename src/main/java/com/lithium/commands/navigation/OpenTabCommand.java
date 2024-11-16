@@ -31,7 +31,7 @@ import java.util.ArrayList;
  */
 public class OpenTabCommand implements Command {
     private static final Logger log = LogManager.getLogger(OpenTabCommand.class);
-    private final String url;
+    private String url;
 
     /**
      * Constructs an OpenTabCommand with the specified URL.
@@ -51,16 +51,15 @@ public class OpenTabCommand implements Command {
      */
     @Override
     public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
-        String resolvedUrl = context.resolveVariables(url);
-        log.info("Opening new tab and navigating to URL: {}", resolvedUrl);
+        url = context.resolveVariables(url);
 
-        if (resolvedUrl == null || resolvedUrl.trim().isEmpty()) {
+        if (url == null || url.trim().isEmpty()) {
             throw new IllegalArgumentException("URL cannot be null or empty");
         }
 
         try {
             // Validate URL format
-            validateUrl(resolvedUrl);
+            validateUrl(url);
 
             // Store the current window handle
             String originalWindow = driver.getWindowHandle();
@@ -71,19 +70,19 @@ public class OpenTabCommand implements Command {
 
             // Switch to the new tab (it will be the last window handle)
             ArrayList<String> tabs = new ArrayList<>(driver.getWindowHandles());
-            String newTab = tabs.get(tabs.size() - 1);
+            String newTab = tabs.getLast();
             driver.switchTo().window(newTab);
 
             // Navigate to the URL
-            driver.get(resolvedUrl);
-            log.info("Successfully opened new tab and navigated to: {}", resolvedUrl);
+            driver.get(url);
+            log.info("Opened new tab and navigated to: {}", url);
 
         } catch (TimeoutException e) {
-            String errorMsg = String.format("Timeout while loading URL in new tab: %s", resolvedUrl);
+            String errorMsg = String.format("Timeout while loading URL in new tab: %s", url);
             throw new CommandException(errorMsg);
 
         } catch (WebDriverException e) {
-            String errorMsg = String.format("Failed to open new tab or load URL: %s", resolvedUrl);
+            String errorMsg = String.format("Failed to open new tab or load URL: %s", url);
             throw new CommandException(errorMsg);
 
         } catch (IllegalArgumentException | CommandException e) {
@@ -91,7 +90,7 @@ public class OpenTabCommand implements Command {
 
         } catch (Exception e) {
             String errorMsg = String.format("Unexpected error while opening new tab with URL: %s",
-                    resolvedUrl);
+                    url);
             throw new CommandException(errorMsg);
         }
     }

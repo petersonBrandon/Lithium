@@ -49,7 +49,6 @@ public class OpenCommand implements Command {
     @Override
     public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
         String resolvedUrl = context.resolveVariables(url);
-        log.info("Opening URL: {}", resolvedUrl);
 
         if (resolvedUrl == null || resolvedUrl.trim().isEmpty()) {
             throw new IllegalArgumentException("URL cannot be null or empty");
@@ -60,6 +59,7 @@ public class OpenCommand implements Command {
             validateUrl(resolvedUrl);
 
             driver.get(resolvedUrl);
+            log.info("Opened URL: {}", resolvedUrl);
         } catch (TimeoutException e) {
             String errorMsg = String.format("Timeout while loading URL: %s", resolvedUrl);
             throw new CommandException(errorMsg);

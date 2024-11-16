@@ -64,11 +64,11 @@ public class WaitCommand implements Command {
             locator = new Locator(locator.getType(), context.resolveVariables(locator.getValue()));
             long timeout = validateAndParseTimeout(context.resolveVariables(timeoutSeconds));
 
-            log.info("Waiting for element to be {}: {} {} (timeout: {}s)",
-                    waitType, locator.getType(), locator.getValue(), timeout);
-
             WebDriverWait customWait = new WebDriverWait(driver, Duration.ofSeconds(timeout));
             waitForElement(customWait);
+
+            log.info("Waited for element to be {}: {} {} (timeout: {}s)",
+                    waitType, locator.getType(), locator.getValue(), timeout);
 
         } catch (TimeoutException e) {
             String errorMsg = String.format(

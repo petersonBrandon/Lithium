@@ -46,9 +46,9 @@ public class ClickCommand implements Command {
     public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
         try {
             locator = new Locator(locator.getType(), context.resolveVariables(locator.getValue()));
-            log.info("Clicking element: {}", locator);
             WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator.toSeleniumBy()));
             element.click();
+            log.info("Clicked element: {}", locator);
         } catch (NoSuchElementException e) {
             throw new CommandException(String.format(
                     "Element not found: '%s %s'",

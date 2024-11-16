@@ -29,7 +29,7 @@ import java.util.Set;
  */
 public class SwitchToWindowCommand implements Command {
     private static final Logger log = LogManager.getLogger(SwitchToWindowCommand.class);
-    private final String windowIdentifier;
+    private String windowIdentifier;
 
     /**
      * Constructs a SwitchToWindowCommand with the specified window identifier.
@@ -49,11 +49,10 @@ public class SwitchToWindowCommand implements Command {
      */
     @Override
     public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
-        String resolvedIdentifier = context.resolveVariables(windowIdentifier);
-        log.info("Switching to window: {}", resolvedIdentifier);
+        windowIdentifier = context.resolveVariables(windowIdentifier);
 
         try {
-            if (resolvedIdentifier == null || resolvedIdentifier.trim().isEmpty()) {
+            if (windowIdentifier == null || windowIdentifier.trim().isEmpty()) {
                 throw new IllegalArgumentException("Window identifier cannot be null or empty");
             }
 
@@ -67,38 +66,38 @@ public class SwitchToWindowCommand implements Command {
 
             // Try to parse as integer first (window index)
             try {
-                int index = Integer.parseInt(resolvedIdentifier) - 1;
+                int index = Integer.parseInt(windowIdentifier) - 1;
                 if (index < 0 || index >= handlesList.size()) {
                     throw new CommandException(String.format(
                             "Window index %d is out of range. Available windows: %d",
                             index, handlesList.size()));
                 }
                 driver.switchTo().window(handlesList.get(index));
-                log.info("Successfully switched to window at index: {}", index);
+                log.info("Switched to window at index: {}", index);
                 return;
             } catch (NumberFormatException e) {
                 // Not an integer, try to find window by title/name
                 boolean windowFound = false;
                 for (String handle : handlesList) {
                     driver.switchTo().window(handle);
-                    if (Objects.equals(driver.getTitle(), resolvedIdentifier)) {
+                    if (Objects.equals(driver.getTitle(), windowIdentifier)) {
                         windowFound = true;
-                        log.info("Successfully switched to window with title: {}", resolvedIdentifier);
+                        log.info("Successfully switched to window with title: {}", windowIdentifier);
                         break;
                     }
                 }
                 if (!windowFound) {
                     throw new CommandException(String.format(
-                            "No window found with title: %s", resolvedIdentifier));
+                            "No window found with title: %s", windowIdentifier));
                 }
             }
 
         } catch (NoSuchWindowException e) {
-            String errorMsg = String.format("Window not found: %s", resolvedIdentifier);
+            String errorMsg = String.format("Window not found: %s", windowIdentifier);
             throw new CommandException(errorMsg);
 
         } catch (TimeoutException e) {
-            String errorMsg = String.format("Timeout while switching to window: %s", resolvedIdentifier);
+            String errorMsg = String.format("Timeout while switching to window: %s", windowIdentifier);
             throw new CommandException(errorMsg);
 
         } catch (IllegalArgumentException | CommandException e) {
@@ -106,7 +105,7 @@ public class SwitchToWindowCommand implements Command {
 
         } catch (Exception e) {
             String errorMsg = String.format("Unexpected error while switching to window: %s",
-                    resolvedIdentifier);
+                    windowIdentifier);
             throw new CommandException(errorMsg);
         }
     }
