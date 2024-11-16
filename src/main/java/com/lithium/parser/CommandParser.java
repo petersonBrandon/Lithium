@@ -70,6 +70,8 @@ public class CommandParser {
             case "back" -> NavigationParser.parseBackCommand(remainingArgs, lineNumber);
             case "forward" -> NavigationParser.parseForwardCommand(remainingArgs, lineNumber);
             case "refresh" -> NavigationParser.parseRefreshCommand(remainingArgs, lineNumber);
+            case "switchToWindow" -> NavigationParser.parseSwitchToWindowCommand(remainingArgs, lineNumber);
+            case "openTab" -> NavigationParser.parseOpenTabCommand(remainingArgs, lineNumber);
 
             // Utility
 

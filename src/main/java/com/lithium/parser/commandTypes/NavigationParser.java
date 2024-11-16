@@ -9,10 +9,7 @@
 
 package com.lithium.parser.commandTypes;
 
-import com.lithium.commands.navigation.BackCommand;
-import com.lithium.commands.navigation.ForwardCommand;
-import com.lithium.commands.navigation.OpenCommand;
-import com.lithium.commands.navigation.RefreshCommand;
+import com.lithium.commands.navigation.*;
 import com.lithium.exceptions.TestSyntaxException;
 import com.lithium.parser.utils.ArgPattern;
 import com.lithium.parser.utils.CommandArgParser;
@@ -42,5 +39,15 @@ public class NavigationParser {
     public static RefreshCommand parseRefreshCommand(String args, int lineNumber) throws TestSyntaxException {
         CommandArgParser.parseArgs(args, ArgPattern.NONE, lineNumber);
         return new RefreshCommand();
+    }
+
+    public static SwitchToWindowCommand parseSwitchToWindowCommand(String args, int lineNumber) throws TestSyntaxException {
+        List<String> tokens = CommandArgParser.parseArgs(args, ArgPattern.TEXT_ONLY, lineNumber);
+        return new SwitchToWindowCommand(tokens.getFirst());
+    }
+
+    public static OpenTabCommand parseOpenTabCommand(String args, int lineNumber) throws TestSyntaxException {
+        List<String> tokens = CommandArgParser.parseArgs(args, ArgPattern.TEXT_ONLY, lineNumber);
+        return new OpenTabCommand(tokens.getFirst());
     }
 }

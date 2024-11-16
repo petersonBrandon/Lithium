@@ -20,4 +20,10 @@ test "Example" {
     log info "${inputText}";
     assertText xpath "//*[@href='/projects']" "Projects";
     assertVisible link "Projects";
+
+    openTab "https://www.google.com/";
+    assertURL "https://www.google.com/";
+    switchToWindow "Brandon Peterson - Portfolio";
+    back;
+    assertURL "${url}";
 }
