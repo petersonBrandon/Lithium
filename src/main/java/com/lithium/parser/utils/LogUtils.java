@@ -9,7 +9,7 @@
 
 package com.lithium.parser.utils;
 
-import com.lithium.commands.LogCommand;
+import com.lithium.commands.utility.LogCommand;
 import com.lithium.exceptions.TestSyntaxException;
 import org.apache.logging.log4j.Level;
 

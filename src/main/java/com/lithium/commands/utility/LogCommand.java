@@ -1,5 +1,6 @@
-package com.lithium.commands;
+package com.lithium.commands.utility;
 
+import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
 import com.lithium.exceptions.CommandException;
 import org.apache.logging.log4j.LogManager;

@@ -7,10 +7,10 @@
  * ----------------------------------------------------------------------------
  */
 
-package com.lithium.commands.assertions;
+package com.lithium.commands.assertion;
 
 import com.lithium.commands.Command;
-import com.lithium.commands.assertions.text.AssertTextCommand;
+import com.lithium.commands.assertion.text.AssertTextCommand;
 import com.lithium.core.TestContext;
 import com.lithium.exceptions.AssertionFailedException;
 import com.lithium.exceptions.CommandException;

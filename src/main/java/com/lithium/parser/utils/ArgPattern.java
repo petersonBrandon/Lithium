@@ -17,7 +17,8 @@ public enum ArgPattern {
     LOCATOR_AND_TEXT(3),            // <type> "locator" "text"
     LOCATOR_AND_WAIT(3, 4),    // <type> "locator" <wait_type> [timeout]
     TEXT_ONLY(1),                   // "text"
-    VARIABLE_AND_VALUE(2);          // <var> "value"
+    VARIABLE_AND_VALUE(2),          // <var> "value"
+    NONE(0);                        // no extraneous args expected
 
     private final int minArgs;
     private final int maxArgs;

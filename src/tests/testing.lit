@@ -7,7 +7,13 @@ test "Example" {
 
     open "${url}";
     assertURL "${url}";
+
     click link "${link}";
+    back;
+
+    assertURL "${url}";
+    click link "${link}";
+
     wait tag "${inputTag}" visible ${waitTime};
     type tag "${inputTag}" "${link}" + " 1234";
     log info "${inputText}";
