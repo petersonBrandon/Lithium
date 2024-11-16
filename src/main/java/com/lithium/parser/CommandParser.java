@@ -98,21 +98,6 @@ public class CommandParser {
         );
     }
 
-    private LogCommand parseLogCommand(String args, int lineNumber) throws TestSyntaxException {
-        String[] logArgs = LogUtils.parseLogArgs(args, lineNumber);
-        return LogUtils.createLogCommand(logArgs, lineNumber);
-    }
-
-    private SetCommand parseSetCommand(String args, int lineNumber) throws TestSyntaxException {
-        String[] setParts = args.split("=", 2);
-        if (setParts.length != 2) {
-            throw new TestSyntaxException("Invalid set command format. Expected: set <variable> = <value>", lineNumber);
-        }
-        String varName = setParts[0].trim();
-        String value = StringUtils.stripQuotes(setParts[1].trim());
-        return new SetCommand(varName, value);
-    }
-
     private AssertTextCommand parseAssertTextCommand(String args, int lineNumber) throws TestSyntaxException {
         List<String> tokens = CommandArgParser.parseArgs(args, ArgPattern.LOCATOR_AND_TEXT, lineNumber);
         String text = tokens.get(2);
@@ -130,5 +115,23 @@ public class CommandParser {
     private AssertURLCommand parseAssertURLCommand(String args, int lineNumber) throws TestSyntaxException {
         List<String> tokens = CommandArgParser.parseArgs(args, ArgPattern.TEXT_ONLY, lineNumber);
         return new AssertURLCommand(tokens.getFirst());
+    }
+
+
+    // COMMANDS THAT USE NON-STANDARD ARG PARSING
+
+    private LogCommand parseLogCommand(String args, int lineNumber) throws TestSyntaxException {
+        String[] logArgs = LogUtils.parseLogArgs(args, lineNumber);
+        return LogUtils.createLogCommand(logArgs, lineNumber);
+    }
+
+    private SetCommand parseSetCommand(String args, int lineNumber) throws TestSyntaxException {
+        String[] setParts = args.split("=", 2);
+        if (setParts.length != 2) {
+            throw new TestSyntaxException("Invalid set command format. Expected: set <variable> = <value>", lineNumber);
+        }
+        String varName = setParts[0].trim();
+        String value = StringUtils.stripQuotes(setParts[1].trim());
+        return new SetCommand(varName, value);
     }
 }
