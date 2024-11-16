@@ -52,7 +52,10 @@ public class NavigationParser {
     }
 
     public static CloseTabCommand parseCloseTabCommand(String args, int lineNumber) throws TestSyntaxException {
-        CommandArgParser.parseArgs(args, ArgPattern.NONE, lineNumber);
+        List<String> tokens = CommandArgParser.parseArgs(args, ArgPattern.OPTIONAL_TEXT, lineNumber);
+        if(!tokens.isEmpty()) {
+            return new CloseTabCommand(tokens.getFirst());
+        }
         return new CloseTabCommand();
     }
 }

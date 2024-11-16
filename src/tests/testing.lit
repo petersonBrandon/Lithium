@@ -27,7 +27,6 @@ test "Example" {
     back;
     assertURL "${url}";
 
-    switchToWindow 2;
-    closeTab;
+    closeTab 2;
     assertURL "${url}";
 }

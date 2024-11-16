@@ -18,6 +18,7 @@ public enum ArgPattern {
     LOCATOR_AND_WAIT(3, 4),    // <type> "locator" <wait_type> [timeout]
     TEXT_ONLY(1),                   // "text"
     VARIABLE_AND_VALUE(2),          // <var> "value"
+    OPTIONAL_TEXT(0, 1),       // "<value>" (optional)
     NONE(0);                        // no extraneous args expected
 
     private final int minArgs;
