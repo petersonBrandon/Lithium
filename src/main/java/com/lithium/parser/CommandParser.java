@@ -11,15 +11,15 @@ package com.lithium.parser;
 
 import com.lithium.commands.*;
 import com.lithium.commands.assertions.AssertTextCommand;
+import com.lithium.commands.assertions.AssertURLCommand;
 import com.lithium.commands.assertions.AssertVisibleCommand;
 import com.lithium.exceptions.TestSyntaxException;
 import com.lithium.locators.LocatorParser;
-import com.lithium.parser.utils.LocatorUtils;
-import com.lithium.parser.utils.LogUtils;
-import com.lithium.parser.utils.StringUtils;
-import com.lithium.parser.utils.WaitUtils;
+import com.lithium.parser.utils.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.List;
 
 /**
  * The CommandParser class is responsible for parsing script commands in the
@@ -39,7 +39,16 @@ public class CommandParser {
      * @throws TestSyntaxException if the command syntax is invalid
      */
     public Command parseCommand(String line, int lineNumber) throws TestSyntaxException {
-        String[] parts = line.trim().split("\\s+", 2);
+        // First check if the line ends with a semicolon
+        line = line.trim();
+        if (!line.endsWith(";")) {
+            throw new TestSyntaxException("Missing semicolon at end of command", lineNumber);
+        }
+
+        // Remove the semicolon before parsing
+        line = line.substring(0, line.length() - 1).trim();
+
+        String[] parts = line.split("\\s+", 2);
         if (parts.length < 2) {
             throw new TestSyntaxException("Invalid command format", lineNumber);
         }
@@ -56,34 +65,35 @@ public class CommandParser {
             case "set" -> parseSetCommand(remainingArgs, lineNumber);
             case "assertText" -> parseAssertTextCommand(remainingArgs, lineNumber);
             case "assertVisible" -> parseAssertVisibleCommand(remainingArgs, lineNumber);
+            case "assertURL" -> parseAssertURLCommand(remainingArgs, lineNumber);
             default -> null;
         };
     }
 
     private OpenCommand parseOpenCommand(String args, int lineNumber) throws TestSyntaxException {
-        String url = StringUtils.extractQuotedString(args, lineNumber);
-        return new OpenCommand(url);
+        List<String> tokens = CommandArgParser.parseArgs(args, ArgPattern.TEXT_ONLY, lineNumber);
+        return new OpenCommand(tokens.getFirst());
     }
 
     private ClickCommand parseClickCommand(String args, int lineNumber) throws TestSyntaxException {
-        String[] clickArgs = LocatorUtils.parseLocatorArgs(args, lineNumber);
-        return new ClickCommand(LocatorParser.parse(clickArgs[0], clickArgs[1], lineNumber));
+        List<String> tokens = CommandArgParser.parseArgs(args, ArgPattern.LOCATOR_ONLY, lineNumber);
+        return new ClickCommand(LocatorParser.parse(tokens.get(0), tokens.get(1), lineNumber));
     }
 
     private TypeCommand parseTypeCommand(String args, int lineNumber) throws TestSyntaxException {
-        String[] typeArgs = LocatorUtils.parseTypeArgs(args, lineNumber);
+        List<String> tokens = CommandArgParser.parseArgs(args, ArgPattern.LOCATOR_AND_TEXT, lineNumber);
         return new TypeCommand(
-                LocatorParser.parse(typeArgs[0], typeArgs[1], lineNumber),
-                typeArgs[2]
+                LocatorParser.parse(tokens.get(0), tokens.get(1), lineNumber),
+                tokens.get(2)
         );
     }
 
     private WaitCommand parseWaitCommand(String args, int lineNumber) throws TestSyntaxException {
-        String[] waitArgs = LocatorUtils.parseWaitArgs(args, lineNumber);
-        String timeout = waitArgs.length > 3 ? waitArgs[3] : "30";
+        List<String> tokens = CommandArgParser.parseArgs(args, ArgPattern.LOCATOR_AND_WAIT, lineNumber);
+        String timeout = tokens.size() > 3 ? tokens.get(3) : "30";
         return new WaitCommand(
-                LocatorParser.parse(waitArgs[0], waitArgs[1], lineNumber),
-                WaitUtils.parseWaitType(waitArgs[2], lineNumber),
+                LocatorParser.parse(tokens.get(0), tokens.get(1), lineNumber),
+                WaitUtils.parseWaitType(tokens.get(2), lineNumber),
                 timeout
         );
     }
@@ -104,21 +114,21 @@ public class CommandParser {
     }
 
     private AssertTextCommand parseAssertTextCommand(String args, int lineNumber) throws TestSyntaxException {
-        String[] parts = LocatorUtils.parseAssertTextArgs(args, lineNumber);
-        if (parts.length != 3) {
-            throw new TestSyntaxException("Invalid assertText command format. Expected: assertText <locator type> \"<locator>\" \"<expected text>\"", lineNumber);
+        List<String> tokens = CommandArgParser.parseArgs(args, ArgPattern.LOCATOR_AND_TEXT, lineNumber);
+        String text = tokens.get(2);
+        if(tokens.get(2).startsWith("\"") && tokens.get(2).endsWith("\"")) {
+            text = tokens.get(2).substring(1, tokens.get(2).length() - 1);
         }
-        if(parts[2].startsWith("\"") && parts[2].endsWith("\"")) {
-            parts[2] = parts[2].substring(1, parts[2].length() - 1);
-        }
-        return new AssertTextCommand(LocatorParser.parse(parts[0], parts[1], lineNumber), parts[2]);
+        return new AssertTextCommand(LocatorParser.parse(tokens.get(0), tokens.get(1), lineNumber), text);
     }
 
     private AssertVisibleCommand parseAssertVisibleCommand(String args, int lineNumber) throws TestSyntaxException {
-        String[] parts = LocatorUtils.parseAssertElementArgs(args, lineNumber);
-        if (parts.length != 2) {
-            throw new TestSyntaxException("Invalid assertText command format. Expected: assertText <locator type> \"<locator>\"", lineNumber);
-        }
-        return new AssertVisibleCommand(LocatorParser.parse(parts[0], parts[1], lineNumber));
+        List<String> tokens = CommandArgParser.parseArgs(args, ArgPattern.LOCATOR_ONLY, lineNumber);
+        return new AssertVisibleCommand(LocatorParser.parse(tokens.get(0), tokens.get(1), lineNumber));
+    }
+
+    private AssertURLCommand parseAssertURLCommand(String args, int lineNumber) throws TestSyntaxException {
+        List<String> tokens = CommandArgParser.parseArgs(args, ArgPattern.TEXT_ONLY, lineNumber);
+        return new AssertURLCommand(tokens.getFirst());
     }
 }

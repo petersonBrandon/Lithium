@@ -1,15 +1,16 @@
 test "Example" {
-    set url = "https://www.brandonpeterson.dev/"
-    set link = "Tools"
-    set inputText = "SENT Emoji"
-    set waitTime = 5
-    set inputTag = input
+    set url = "https://www.brandonpeterson.dev/";
+    set link = "Tools";
+    set inputText = "SENT Emoji";
+    set waitTime = 5;
+    set inputTag = input;
 
-    open "${url}"
-    click link "${link}"
-    wait tag "${inputTag}" visible ${waitTime}
-    type tag "${inputTag}" "${link}" + " 1234"
-    log info "${inputText}"
-    assertText xpath "//*[@href='/projects']" "Projects"
-    assertVisible link "Projects"
+    open "${url}";
+    assertURL "${url}";
+    click link "${link}";
+    wait tag "${inputTag}" visible ${waitTime};
+    type tag "${inputTag}" "${link}" + " 1234";
+    log info "${inputText}";
+    assertText xpath "//*[@href='/projects']" "Projects";
+    assertVisible link "Projects";
 }
