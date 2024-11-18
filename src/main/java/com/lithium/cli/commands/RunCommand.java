@@ -14,11 +14,17 @@ import com.lithium.core.TestCase;
 import com.lithium.core.TestRunner;
 import com.lithium.exceptions.TestSyntaxException;
 import com.lithium.parser.TestParser;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.impl.DefaultParser;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+import org.jline.utils.AttributedStringBuilder;
+import org.jline.utils.AttributedStyle;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,35 +36,39 @@ import java.util.Map;
  * The Run Command allows for the running of .lit tests.
  */
 public class RunCommand extends BaseLithiumCommand {
-    private static final Logger log = LogManager.getLogger(RunCommand.class);
     private static final List<RunCommand.TestResult> testResults = new ArrayList<>();
     private static final String SEPARATOR = "════════════════════════════════════════════════════════════";
     private static final String SUB_SEPARATOR = "────────────────────────────────────────────────────────";
+    private Terminal terminal;
+    private LineReader lineReader;
 
-    /**
-     * Get the description of the 'run' command
-     *
-     * @return Run Command description
-     */
+    public RunCommand() {
+        try {
+            this.terminal = TerminalBuilder.builder()
+                    .system(true)
+                    .dumb(true)      // Allow dumb terminal as fallback
+                    .jansi(true)     // Enable Jansi support
+                    .build();
+
+            this.lineReader = LineReaderBuilder.builder()
+                    .terminal(terminal)
+                    .parser(new DefaultParser())
+                    .build();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to initialize terminal: " + e.getMessage(), e);
+        }
+    }
+
     @Override
     public String getDescription() {
         return "Executes Lithium test files";
     }
 
-    /**
-     * Get the usage details of the 'run' command
-     *
-     * @return Usage Details
-     */
     @Override
     public String getUsage() {
         return "lit run <file-name> [test-name] [--headed] [--maximized]";
     }
 
-    /**
-     * Main execution command of the 'run' command
-     * @param args command args
-     */
     @Override
     public void execute(String[] args) {
         validateArgsLength(args, 2);
@@ -73,6 +83,7 @@ public class RunCommand extends BaseLithiumCommand {
 
             File testFile = new File(testFilePath);
             if (!testFile.exists()) {
+                printError("Test file '" + testFilePath + "' not found!");
                 throw new FileNotFoundException("Test file '" + testFilePath + "' not found!");
             }
 
@@ -84,6 +95,7 @@ public class RunCommand extends BaseLithiumCommand {
                 String testName = args[2];
                 TestCase test = testCases.get(testName);
                 if (test == null) {
+                    printError("Test '" + testName + "' not found!");
                     throw new IllegalArgumentException("Test '" + testName + "' not found!");
                 }
                 runAndLogTest(runner, test, fileName);
@@ -93,14 +105,13 @@ public class RunCommand extends BaseLithiumCommand {
                 }
             }
 
-            // Log summary after all tests are complete
             logTestSummary();
 
         } catch (TestSyntaxException e) {
-            log.fatal("Syntax error: " + e.getMessage());
+            printError("Syntax error: " + e.getMessage());
             System.exit(1);
         } catch (Exception e) {
-            log.fatal("Error: " + e.getMessage());
+            printError("Error: " + e.getMessage());
             System.exit(1);
         } finally {
             if (runner != null) {
@@ -109,33 +120,27 @@ public class RunCommand extends BaseLithiumCommand {
         }
     }
 
-    /**
-     * Execute a test and log the results
-     *
-     * @param runner test runner instance
-     * @param test test case to be run
-     * @param fileName test file name
-     */
-    private static void runAndLogTest(TestRunner runner, TestCase test, String fileName) {
+    private void runAndLogTest(TestRunner runner, TestCase test, String fileName) {
         LocalDateTime startTime = LocalDateTime.now();
         String errorMessage = null;
         RunCommand.ResultType result;
 
-        log.info(SUB_SEPARATOR);
+        printSeparator(SUB_SEPARATOR);
+        printInfo("Running test: " + test.getName());
 
         try {
             runner.runTest(test);
             result = RunCommand.ResultType.PASS;
-            log.info("Status: ✓ PASSED");
+            printSuccess("Status: ✓ PASSED");
         } catch (Exception e) {
             result = RunCommand.ResultType.FAIL;
             errorMessage = e.getMessage();
-            log.error("Status: ✗ FAILED");
-            log.error("Error: {}", errorMessage);
+            printError("Status: ✗ FAILED");
+            printError("Error: " + errorMessage);
         }
 
         Duration duration = Duration.between(startTime, LocalDateTime.now());
-        log.info("Duration: {} ms", duration.toMillis());
+        printInfo("Duration: " + duration.toMillis() + " ms");
 
         testResults.add(new RunCommand.TestResult(
                 fileName,
@@ -147,10 +152,7 @@ public class RunCommand extends BaseLithiumCommand {
         ));
     }
 
-    /**
-     * Output summary of test executions
-     */
-    private static void logTestSummary() {
+    private void logTestSummary() {
         int totalTests = testResults.size();
         int passedTests = (int) testResults.stream()
                 .filter(r -> r.result == RunCommand.ResultType.PASS)
@@ -158,57 +160,80 @@ public class RunCommand extends BaseLithiumCommand {
         int failedTests = totalTests - passedTests;
         double successRate = totalTests > 0 ? (passedTests * 100.0 / totalTests) : 0;
 
-        log.info(SEPARATOR);
-        log.info("                     TEST EXECUTION SUMMARY                     ");
-        log.info(SEPARATOR);
+        printSeparator(SEPARATOR);
+        printInfo("                  TEST EXECUTION SUMMARY                     ");
+        printSeparator(SEPARATOR);
 
-        // Calculate duration for entire test suite
         Duration totalDuration = Duration.between(
                 testResults.get(0).startTime,
                 testResults.get(testResults.size() - 1).endTime
         );
 
-        // Summary Statistics
-        log.info("");
-        log.info("Total Duration: {} seconds", totalDuration.toSeconds());
-        log.info("Total Tests: {}", totalTests);
-        log.info("Passed Tests: {} ✓", passedTests);
-        log.info("Failed Tests: {} ✗", failedTests);
-        log.info("Success Rate: {}%", successRate);
-        log.info("");
+        printInfo("");
+        printInfo("Total Duration: " + totalDuration.toSeconds() + " seconds");
+        printInfo("Total Tests: " + totalTests);
+        printSuccess("Passed Tests: " + passedTests + " ✓");
+        printError("Failed Tests: " + failedTests + " ✗");
+        printInfo("Success Rate: " + String.format("%.2f", successRate) + "%");
+        printInfo("");
 
-        // Failed Tests Details
         if (failedTests > 0) {
-            log.info(SUB_SEPARATOR);
-            log.info("FAILED TESTS DETAILS");
-            log.info(SUB_SEPARATOR);
+            printSeparator(SUB_SEPARATOR);
+            printError("FAILED TESTS DETAILS");
+            printSeparator(SUB_SEPARATOR);
 
             testResults.stream()
                     .filter(r -> r.result == RunCommand.ResultType.FAIL)
                     .forEach(r -> {
-                        log.error("Test Name: {}", r.testName);
-                        log.error("File: {}", r.fileName);
-                        log.error("Error: {}", r.errorMessage);
-                        log.error("Duration: {} ms",
-                                Duration.between(r.startTime, r.endTime).toMillis());
+                        printError("Test Name: " + r.testName);
+                        printError("File: " + r.fileName);
+                        printError("Error: " + r.errorMessage);
+                        printError("Duration: " +
+                                Duration.between(r.startTime, r.endTime).toMillis() + " ms");
+                        printInfo("");
                     });
         }
 
-        log.info(SEPARATOR);
+        printSeparator(SEPARATOR);
     }
 
-    /**
-     * Test result types
-     */
+    private void printInfo(String message) {
+        terminal.writer().println(new AttributedStringBuilder()
+                .append(message)
+                .toAnsi());
+        terminal.flush();
+    }
+
+    private void printError(String message) {
+        terminal.writer().println(new AttributedStringBuilder()
+                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.RED))
+                .append(message)
+                .toAnsi());
+        terminal.flush();
+    }
+
+    private void printSuccess(String message) {
+        terminal.writer().println(new AttributedStringBuilder()
+                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.GREEN))
+                .append(message)
+                .toAnsi());
+        terminal.flush();
+    }
+
+    private void printSeparator(String separator) {
+        terminal.writer().println(new AttributedStringBuilder()
+                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.BLUE))
+                .append(separator)
+                .toAnsi());
+        terminal.flush();
+    }
+
     public enum ResultType {
         PASS,
         FAIL,
         SKIP
     }
 
-    /**
-     * The TestResult class handles all test result data
-     */
     private static class TestResult {
         final String fileName;
         final String testName;
@@ -217,16 +242,6 @@ public class RunCommand extends BaseLithiumCommand {
         final LocalDateTime endTime;
         final String errorMessage;
 
-        /**
-         * Construct the test result
-         *
-         * @param fileName What the test file name is.
-         * @param testName What the test name is.
-         * @param result What the test result is.
-         * @param startTime What the test start time is.
-         * @param endTime What the test end time is.
-         * @param errorMessage What is the error message is.
-         */
         TestResult(String fileName, String testName, RunCommand.ResultType result,
                    LocalDateTime startTime, LocalDateTime endTime, String errorMessage) {
             this.fileName = fileName;
