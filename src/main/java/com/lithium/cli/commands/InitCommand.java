@@ -18,7 +18,6 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -27,9 +26,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class InitCommand extends BaseLithiumCommand {
@@ -238,8 +234,9 @@ public class InitCommand extends BaseLithiumCommand {
             appendJsonProperty(json, "author", config.getAuthor(), true);
 
             // Core settings
+            appendJsonProperty(json, "cliOverride", config.getCliOverride(), true);
             appendJsonProperty(json, "baseUrl", config.getBaseUrl(), true);
-            appendJsonProperty(json, "defaultTimeout", String.valueOf(config.getTimeout()), true);
+            appendJsonProperty(json, "defaultTimeout", String.valueOf(config.getDefaultTimeout()), true);
             appendJsonProperty(json, "browser", config.getBrowser(), true);
             appendJsonProperty(json, "headless", config.isHeadless(), true);
             appendJsonProperty(json, "maximizeWindow", config.isMaximizeWindow(), true);
@@ -402,7 +399,7 @@ public class InitCommand extends BaseLithiumCommand {
         // Timeout
         printInputPrompt("Enter the default timeout in seconds (default: 30): ");
         String timeoutStr = lineReader.readLine();
-        config.setTimeout(parseTimeout(timeoutStr));
+        config.setDefaultTimeout(parseTimeout(timeoutStr));
 
         // Tests Folder
         printInputPrompt("Enter the root test folder name (default: tests): ");
