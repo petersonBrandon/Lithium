@@ -10,6 +10,7 @@
 package com.lithium.cli.commands;
 
 import com.lithium.cli.BaseLithiumCommand;
+import com.lithium.cli.util.ProjectConfig;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.impl.DefaultParser;
@@ -26,6 +27,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -87,10 +90,8 @@ public class InitCommand extends BaseLithiumCommand {
         quickMode = Arrays.asList(args).contains("--quick");
         String projectName;
 
-        if (!quickMode) {
-            printBanner();
-            printWelcome();
-        }
+        printBanner();
+        printWelcome();
 
         // Step 1: Project Name
         printStep(1, "Project Setup");
@@ -159,7 +160,7 @@ public class InitCommand extends BaseLithiumCommand {
     }
 
     private void generateSampleTest(String projectName, ProjectConfig config) throws IOException {
-        Path testPath = Paths.get(projectName, config.getTestsFolder(), "sampleTest.lit");
+        Path testPath = Paths.get(projectName, config.getTestDirectory(), "sampleTest.lit");
         Files.write(testPath, SAMPLE_TEST_CONTENT.getBytes());
     }
 
@@ -209,7 +210,7 @@ public class InitCommand extends BaseLithiumCommand {
         Files.createDirectory(projectPath);
 
         // Create subdirectories
-        String[] directories = {config.getTestsFolder(), "reports"};
+        String[] directories = {config.getTestDirectory(), "reports"};
         for (String dir : directories) {
             Files.createDirectory(projectPath.resolve(dir));
         }
@@ -224,37 +225,92 @@ public class InitCommand extends BaseLithiumCommand {
     }
 
     private void generateConfigFile(ProjectConfig config) throws IOException {
-        JSONObject jsonConfig = new JSONObject();
-        jsonConfig.put("projectName", config.getProjectName());
-        jsonConfig.put("baseUrl", config.getBaseUrl());
-        jsonConfig.put("defaultTimeout", config.getTimeout());
-        jsonConfig.put("browser", config.getBrowser());
-        jsonConfig.put("testsFolder", config.getTestsFolder());
-
         Path configPath = Paths.get(config.getProjectName(), "lithium.config.json");
+
         try (FileWriter writer = new FileWriter(configPath.toFile())) {
-            writer.write(jsonConfig.toString(2));
+            StringBuilder json = new StringBuilder();
+            json.append("{\n");
+
+            // Project metadata
+            appendJsonProperty(json, "projectName", config.getProjectName(), true);
+            appendJsonProperty(json, "description", config.getDescription(), true);
+            appendJsonProperty(json, "version", config.getVersion(), true);
+            appendJsonProperty(json, "author", config.getAuthor(), true);
+
+            // Core settings
+            appendJsonProperty(json, "baseUrl", config.getBaseUrl(), true);
+            appendJsonProperty(json, "defaultTimeout", String.valueOf(config.getTimeout()), true);
+            appendJsonProperty(json, "browser", config.getBrowser(), true);
+            appendJsonProperty(json, "headless", config.isHeadless(), true);
+            appendJsonProperty(json, "maximizeWindow", config.isMaximizeWindow(), true);
+
+            // Parallel execution
+            json.append("    \"parallelExecution\": {\n");
+            json.append("        \"enabled\": ").append(config.getParallelExecution().isEnabled()).append(",\n");
+            json.append("        \"threadCount\": ").append(config.getParallelExecution().getThreadCount()).append("\n");
+            json.append("    },\n");
+
+            // Directory and file settings
+            appendJsonProperty(json, "testDirectory", config.getTestDirectory(), true);
+            appendJsonProperty(json, "reportDirectory", config.getReportDirectory(), true);
+            appendJsonProperty(json, "logDirectory", config.getLogDirectory(), true);
+
+            // Report format array
+            json.append("    \"reportFormat\": [\n");
+            String[] formats = config.getReportFormat();
+            for (int i = 0; i < formats.length; i++) {
+                json.append("        \"").append(formats[i]).append("\"");
+                if (i < formats.length - 1) json.append(",");
+                json.append("\n");
+            }
+            json.append("    ],\n");
+
+            // Reporting and logging settings
+            appendJsonProperty(json, "enableScreenshotsOnFailure", config.isEnableScreenshotsOnFailure(), true);
+            appendJsonProperty(json, "logLevel", config.getLogLevel(), true);
+            appendJsonProperty(json, "saveExecutionLogs", config.isSaveExecutionLogs(), true);
+
+            // Environments
+            json.append("    \"environments\": {\n");
+            String[] envOrder = {"dev", "staging", "production"};
+            for (int i = 0; i < envOrder.length; i++) {
+                String envName = envOrder[i];
+                ProjectConfig.EnvironmentConfig envConfig = config.getEnvironments().get(envName);
+                if (envConfig != null) {
+                    json.append("        \"").append(envName).append("\": {\n");
+                    json.append("            \"baseUrl\": \"").append(envConfig.getBaseUrl()).append("\",\n");
+                    json.append("            \"browser\": \"").append(envConfig.getBrowser()).append("\"\n");
+                    json.append("        }");
+                    if (i < envOrder.length - 1) json.append(",");
+                    json.append("\n");
+                }
+            }
+            json.append("    },\n");
+
+            // Active environment (last property, no comma)
+            appendJsonProperty(json, "activeEnvironment", config.getActiveEnvironment(), false);
+
+            json.append("}");
+            writer.write(json.toString());
         }
+    }
+
+    private void appendJsonProperty(StringBuilder json, String key, String value, boolean addComma) {
+        json.append("    \"").append(key).append("\": \"").append(value).append("\"");
+        if (addComma) json.append(",");
+        json.append("\n");
+    }
+
+    private void appendJsonProperty(StringBuilder json, String key, boolean value, boolean addComma) {
+        json.append("    \"").append(key).append("\": ").append(value);
+        if (addComma) json.append(",");
+        json.append("\n");
     }
 
     private void printSuccess(String projectName) {
         terminal.writer().println(new AttributedStringBuilder()
                 .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.GREEN))
-                .append("\nProject '" + projectName + "' successfully initialized!")
-                .toAnsi());
-
-        terminal.writer().println(new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT)
-                .append("\nProject structure created:")
-                .toAnsi());
-
-        terminal.writer().println(new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.CYAN))
-                .append("  ├── lithium.config.json")
-                .append("\n  ├── tests/")
-                .append("\n  │   └── " + (quickMode ? "" : "sampleTest.lit"))
-                .append("\n  ├── reports/")
-                .append("\n  └── drivers/")
+                .append("\nLithium Project '" + projectName + "' successfully initialized!")
                 .toAnsi());
 
         terminal.writer().println(new AttributedStringBuilder()
@@ -263,39 +319,6 @@ public class InitCommand extends BaseLithiumCommand {
                 .toAnsi());
 
         terminal.flush();
-    }
-
-    // Helper class to store configuration
-    private static class ProjectConfig {
-        private final String projectName;
-        private String baseUrl = "";
-        private String browser = "chrome";
-        private int timeout = 30;
-        private String testsFolder = "tests";
-
-        public ProjectConfig(String projectName) {
-            this.projectName = projectName;
-        }
-
-        // Getters and setters
-        public String getProjectName() { return projectName; }
-        public String getBaseUrl() { return baseUrl; }
-        public String getBrowser() { return browser; }
-        public int getTimeout() { return timeout; }
-        public String getTestsFolder() { return testsFolder; }
-
-        public void setBaseUrl(String baseUrl) {
-            this.baseUrl = baseUrl != null ? baseUrl.trim() : "";
-        }
-        public void setBrowser(String browser) {
-            this.browser = browser != null ? browser : "chrome";
-        }
-        public void setTimeout(int timeout) {
-            this.timeout = timeout;
-        }
-        public void setTestsFolder(String testsFolder) {
-            this.testsFolder = !Objects.equals(testsFolder, "") ? testsFolder : "tests";
-        }
     }
 
     private void showSpinner(String message, int durationMs) {
@@ -384,7 +407,7 @@ public class InitCommand extends BaseLithiumCommand {
         // Tests Folder
         printInputPrompt("Enter the root test folder name (default: tests): ");
         String testsFolder = lineReader.readLine();
-        config.setTestsFolder(testsFolder);
+        config.setTestDirectory(testsFolder);
 
         return config;
     }
