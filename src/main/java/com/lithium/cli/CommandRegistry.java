@@ -9,6 +9,7 @@
 
 package com.lithium.cli;
 
+import com.lithium.cli.commands.InitCommand;
 import com.lithium.cli.commands.RunCommand;
 
 import java.util.HashMap;
@@ -23,7 +24,7 @@ public class CommandRegistry {
     static {
         // Register all commands here
         registerCommand("run", new RunCommand());
-        // Add more commands as needed
+        registerCommand("init", new InitCommand());
     }
 
     /**
