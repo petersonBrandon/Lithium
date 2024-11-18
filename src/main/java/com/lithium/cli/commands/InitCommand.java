@@ -312,6 +312,7 @@ public class InitCommand extends BaseLithiumCommand {
 
         terminal.writer().println(new AttributedStringBuilder()
                 .style(AttributedStyle.DEFAULT)
+                .append("\nUse cd " + projectName + " before writing your tests.")
                 .append("\nYou can now add your test files to the 'tests' folder and run them with 'lit run'.")
                 .toAnsi());
 
