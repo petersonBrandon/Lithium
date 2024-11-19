@@ -1,5 +1,8 @@
 package com.lithium.cli.util;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -9,9 +12,10 @@ public class ProjectConfig {
     private String description = "";
     private String version = "1.0.0";
     private String author = "";
+    private boolean cliOverride = true;
     private String baseUrl = "";
     private String browser = "chrome";
-    private int timeout = 30;
+    private int defaultTimeout = 30;
     private String testDirectory = "tests";
     private boolean headless = false;
     private boolean maximizeWindow = true;
@@ -25,7 +29,13 @@ public class ProjectConfig {
     private Map<String, EnvironmentConfig> environments = new HashMap<>();
     private String activeEnvironment = "dev";
 
-    public ProjectConfig(String projectName) {
+    public ProjectConfig() {
+        this.projectName = "Lithium Project";
+        initializeDefaultEnvironments();
+    }
+
+    @JsonCreator
+    public ProjectConfig(@JsonProperty("projectName") String projectName) {
         this.projectName = projectName;
         initializeDefaultEnvironments();
     }
@@ -41,9 +51,10 @@ public class ProjectConfig {
     public String getDescription() { return description; }
     public String getVersion() { return version; }
     public String getAuthor() { return author; }
+    public boolean getCliOverride() { return cliOverride; }
     public String getBaseUrl() { return baseUrl; }
     public String getBrowser() { return browser; }
-    public int getTimeout() { return timeout; }
+    public int getDefaultTimeout() { return defaultTimeout; }
     public String getTestDirectory() { return testDirectory; }
     public boolean isHeadless() { return headless; }
     public boolean isMaximizeWindow() { return maximizeWindow; }
@@ -61,9 +72,10 @@ public class ProjectConfig {
     public void setDescription(String description) { this.description = description; }
     public void setVersion(String version) { this.version = version; }
     public void setAuthor(String author) { this.author = author; }
+    public void setCliOverride(boolean cliOverride) { this.cliOverride = cliOverride; }
     public void setBaseUrl(String baseUrl) { this.baseUrl = baseUrl != null ? baseUrl.trim() : ""; }
     public void setBrowser(String browser) { this.browser = browser != null ? browser : "chrome"; }
-    public void setTimeout(int timeout) { this.timeout = timeout; }
+    public void setDefaultTimeout(int defaultTimeout) { this.defaultTimeout = defaultTimeout; }
     public void setTestDirectory(String testDirectory) {
         this.testDirectory = !Objects.equals(testDirectory, "") ? testDirectory : "tests";
     }
@@ -83,9 +95,12 @@ public class ProjectConfig {
         this.activeEnvironment = activeEnvironment;
     }
 
-    public class EnvironmentConfig {
+    public static class EnvironmentConfig {
         private String baseUrl;
         private String browser;
+
+        public EnvironmentConfig() {
+        }
 
         public EnvironmentConfig(String baseUrl, String browser) {
             this.baseUrl = baseUrl;
@@ -99,6 +114,9 @@ public class ProjectConfig {
     public static class ParallelExecutionConfig {
         private boolean enabled = true;
         private int threadCount = 4;
+
+        public ParallelExecutionConfig() {
+        }
 
         public boolean isEnabled() { return enabled; }
         public int getThreadCount() { return threadCount; }

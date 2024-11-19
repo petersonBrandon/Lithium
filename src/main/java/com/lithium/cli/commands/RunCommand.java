@@ -9,51 +9,35 @@
 
 package com.lithium.cli.commands;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lithium.cli.BaseLithiumCommand;
+import com.lithium.cli.util.*;
 import com.lithium.core.TestCase;
 import com.lithium.core.TestRunner;
 import com.lithium.exceptions.TestSyntaxException;
 import com.lithium.parser.TestParser;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.reader.impl.DefaultParser;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
-import org.jline.utils.AttributedStringBuilder;
-import org.jline.utils.AttributedStyle;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
-/**
- * The Run Command allows for the running of .lit tests.
- */
 public class RunCommand extends BaseLithiumCommand {
-    private static final List<RunCommand.TestResult> testResults = new ArrayList<>();
-    private static final String SEPARATOR = "════════════════════════════════════════════════════════════";
-    private static final String SUB_SEPARATOR = "────────────────────────────────────────────────────────";
-    private Terminal terminal;
-    private LineReader lineReader;
+    private final TerminalOutput output;
+    private final TestExecutionSummary summary;
+    private ProjectConfig config;
 
     public RunCommand() {
         try {
-            this.terminal = TerminalBuilder.builder()
+            Terminal terminal = TerminalBuilder.builder()
                     .system(true)
-                    .dumb(true)      // Allow dumb terminal as fallback
-                    .jansi(true)     // Enable Jansi support
+                    .dumb(true)
+                    .jansi(true)
                     .build();
-
-            this.lineReader = LineReaderBuilder.builder()
-                    .terminal(terminal)
-                    .parser(new DefaultParser())
-                    .build();
+            this.output = new TerminalOutput(terminal);
+            this.summary = new TestExecutionSummary(output);
         } catch (IOException e) {
             throw new RuntimeException("Failed to initialize terminal: " + e.getMessage(), e);
         }
@@ -66,52 +50,33 @@ public class RunCommand extends BaseLithiumCommand {
 
     @Override
     public String getUsage() {
-        return "lit run <file-name> [test-name] [--headed] [--maximized]";
+        return "lit run <file-name> [test-name] [--headed=true|false] [--maximized=true|false] " +
+                "[--browser=<browser_name>] [--timeout=<seconds>]";
     }
 
     @Override
     public void execute(String[] args) {
         validateArgsLength(args, 2);
+        loadConfig();
 
-        boolean headless = !Arrays.asList(args).contains("--headed");
-        boolean maximized = Arrays.asList(args).contains("--maximized");
-        TestRunner runner = null;
+        TestFileResolver fileResolver = new TestFileResolver(config);
+        CommandLineArgsParser argsParser = new CommandLineArgsParser(config);
+
+        Map<String, String> cliArgs = argsParser.parseArgs(args);
         String fileName = args[1];
 
+        boolean headless = !argsParser.getBooleanOption(cliArgs, "headed", !config.isHeadless());
+        boolean maximized = argsParser.getBooleanOption(cliArgs, "maximized", config.isMaximizeWindow());
+        String browser = argsParser.getStringOption(cliArgs, "browser", config.getBrowser());
+        int timeout = argsParser.getIntOption(cliArgs, "timeout", config.getDefaultTimeout());
+
+        TestRunner runner = null;
+
         try {
-            String testFilePath = System.getProperty("user.dir") + "\\" + fileName + ".lit";
-
-            File testFile = new File(testFilePath);
-            if (!testFile.exists()) {
-                printError("Test file '" + testFilePath + "' not found!");
-                throw new FileNotFoundException("Test file '" + testFilePath + "' not found!");
-            }
-
-            TestParser parser = new TestParser();
-            Map<String, TestCase> testCases = parser.parseFile(testFilePath);
-            runner = new TestRunner(headless, maximized);
-
-            if (args.length > 2 && !args[2].startsWith("--")) {
-                String testName = args[2];
-                TestCase test = testCases.get(testName);
-                if (test == null) {
-                    printError("Test '" + testName + "' not found!");
-                    throw new IllegalArgumentException("Test '" + testName + "' not found!");
-                }
-                runAndLogTest(runner, test, fileName);
-            } else {
-                for (TestCase test : testCases.values()) {
-                    runAndLogTest(runner, test, fileName);
-                }
-            }
-
-            logTestSummary();
-
-        } catch (TestSyntaxException e) {
-            printError("Syntax error: " + e.getMessage());
-            System.exit(1);
+            String testFilePath = fileResolver.resolveTestFilePath(fileName);
+            runTests(testFilePath, args, headless, maximized, browser, timeout);
         } catch (Exception e) {
-            printError("Error: " + e.getMessage());
+            output.printError("Error: " + e.getMessage());
             System.exit(1);
         } finally {
             if (runner != null) {
@@ -120,136 +85,93 @@ public class RunCommand extends BaseLithiumCommand {
         }
     }
 
-    private void runAndLogTest(TestRunner runner, TestCase test, String fileName) {
+    private void runTests(String testFilePath, String[] args, boolean headless,
+                          boolean maximized, String browser, int timeout)
+            throws IOException, TestSyntaxException {
+        TestParser parser = new TestParser();
+        Map<String, TestCase> testCases = parser.parseFile(testFilePath);
+        TestRunner runner = new TestRunner(headless, maximized, browser, timeout);
+
+        if (args.length > 2 && !args[2].startsWith("--")) {
+            runSingleTest(args[2], testCases, runner);
+        } else {
+            runAllTests(testCases, runner);
+        }
+
+        summary.printSummary();
+    }
+
+    private void runSingleTest(String testName, Map<String, TestCase> testCases, TestRunner runner) {
+        TestCase test = testCases.get(testName);
+        if (test == null) {
+            output.printError("Test '" + testName + "' not found!");
+            throw new IllegalArgumentException("Test '" + testName + "' not found!");
+        }
+        runAndLogTest(runner, test);
+    }
+
+    private void runAllTests(Map<String, TestCase> testCases, TestRunner runner) {
+        testCases.values().forEach(test -> runAndLogTest(runner, test));
+    }
+
+    private void runAndLogTest(TestRunner runner, TestCase test) {
         LocalDateTime startTime = LocalDateTime.now();
         String errorMessage = null;
-        RunCommand.ResultType result;
+        ResultType result;
 
-        printSeparator(SUB_SEPARATOR);
-        printInfo("Running test: " + test.getName());
+        output.printSeparator(false);
+        output.printInfo("Running test: " + test.getName());
 
         try {
             runner.runTest(test);
-            result = RunCommand.ResultType.PASS;
-            printSuccess("Status: ✓ PASSED");
+            result = ResultType.PASS;
+            output.printSuccess("Status: ✓ PASSED");
         } catch (Exception e) {
-            result = RunCommand.ResultType.FAIL;
+            result = ResultType.FAIL;
             errorMessage = e.getMessage();
-            printError("Status: ✗ FAILED");
-            printError("Error: " + errorMessage);
+            output.printError("Status: ✗ FAILED");
+            output.printError("Error: " + errorMessage);
         }
 
-        Duration duration = Duration.between(startTime, LocalDateTime.now());
-        printInfo("Duration: " + duration.toMillis() + " ms");
+        LocalDateTime endTime = LocalDateTime.now();
+        output.printInfo("Duration: " +
+                java.time.Duration.between(startTime, endTime).toMillis() + " ms");
 
-        testResults.add(new RunCommand.TestResult(
-                fileName,
+        summary.addResult(new TestResult(
+                test.getName(),
                 test.getName(),
                 result,
                 startTime,
-                LocalDateTime.now(),
+                endTime,
                 errorMessage
         ));
     }
 
-    private void logTestSummary() {
-        int totalTests = testResults.size();
-        int passedTests = (int) testResults.stream()
-                .filter(r -> r.result == RunCommand.ResultType.PASS)
-                .count();
-        int failedTests = totalTests - passedTests;
-        double successRate = totalTests > 0 ? (passedTests * 100.0 / totalTests) : 0;
-
-        printSeparator(SEPARATOR);
-        printInfo("                  TEST EXECUTION SUMMARY                     ");
-        printSeparator(SEPARATOR);
-
-        Duration totalDuration = Duration.between(
-                testResults.get(0).startTime,
-                testResults.get(testResults.size() - 1).endTime
-        );
-
-        printInfo("");
-        printInfo("Total Duration: " + totalDuration.toSeconds() + " seconds");
-        printInfo("Total Tests: " + totalTests);
-        printSuccess("Passed Tests: " + passedTests + " ✓");
-        printError("Failed Tests: " + failedTests + " ✗");
-        printInfo("Success Rate: " + String.format("%.2f", successRate) + "%");
-        printInfo("");
-
-        if (failedTests > 0) {
-            printSeparator(SUB_SEPARATOR);
-            printError("FAILED TESTS DETAILS");
-            printSeparator(SUB_SEPARATOR);
-
-            testResults.stream()
-                    .filter(r -> r.result == RunCommand.ResultType.FAIL)
-                    .forEach(r -> {
-                        printError("Test Name: " + r.testName);
-                        printError("File: " + r.fileName);
-                        printError("Error: " + r.errorMessage);
-                        printError("Duration: " +
-                                Duration.between(r.startTime, r.endTime).toMillis() + " ms");
-                        printInfo("");
-                    });
+    private void loadConfig() {
+        try {
+            String configPath = System.getProperty("user.dir") + "/lithium.config.json";
+            File configFile = new File(configPath);
+            if (configFile.exists()) {
+                ObjectMapper mapper = new ObjectMapper();
+                config = mapper.readValue(configFile, ProjectConfig.class);
+                validateTestDirectory();
+            } else {
+                config = new ProjectConfig("Lithium Project");
+            }
+        } catch (IOException e) {
+            output.printError("Error loading config: " + e.getMessage());
+            config = new ProjectConfig("Lithium Project");
         }
-
-        printSeparator(SEPARATOR);
     }
 
-    private void printInfo(String message) {
-        terminal.writer().println(new AttributedStringBuilder()
-                .append(message)
-                .toAnsi());
-        terminal.flush();
-    }
-
-    private void printError(String message) {
-        terminal.writer().println(new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.RED))
-                .append(message)
-                .toAnsi());
-        terminal.flush();
-    }
-
-    private void printSuccess(String message) {
-        terminal.writer().println(new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.GREEN))
-                .append(message)
-                .toAnsi());
-        terminal.flush();
-    }
-
-    private void printSeparator(String separator) {
-        terminal.writer().println(new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.BLUE))
-                .append(separator)
-                .toAnsi());
-        terminal.flush();
-    }
-
-    public enum ResultType {
-        PASS,
-        FAIL,
-        SKIP
-    }
-
-    private static class TestResult {
-        final String fileName;
-        final String testName;
-        final RunCommand.ResultType result;
-        final LocalDateTime startTime;
-        final LocalDateTime endTime;
-        final String errorMessage;
-
-        TestResult(String fileName, String testName, RunCommand.ResultType result,
-                   LocalDateTime startTime, LocalDateTime endTime, String errorMessage) {
-            this.fileName = fileName;
-            this.testName = testName;
-            this.result = result;
-            this.startTime = startTime;
-            this.endTime = endTime;
-            this.errorMessage = errorMessage;
+    private void validateTestDirectory() {
+        if (config.getTestDirectory() != null) {
+            File testDir = new File(config.getTestDirectory());
+            if (!testDir.exists() || !testDir.isDirectory()) {
+                output.printError("Warning: Configured test directory '" +
+                        config.getTestDirectory() + "' does not exist. Falling back to current directory.");
+                config.setTestDirectory(null);
+            }
         }
     }
 }

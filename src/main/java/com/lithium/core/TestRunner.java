@@ -15,6 +15,10 @@ import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.edge.EdgeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
@@ -26,11 +30,9 @@ import java.time.Duration;
  */
 public class TestRunner {
     private static final Logger log = LogManager.getLogger(TestRunner.class);
-    private static final int TIMEOUT_SECONDS = 10;
 
-    private WebDriver driver;
-    private WebDriverWait wait;
-    private ChromeOptions options;
+    private final WebDriver driver;
+    private final int timeout;
 
     /**
      * Constructs a TestRunner with specified options for headless and maximized browser settings.
@@ -38,14 +40,15 @@ public class TestRunner {
      * @param headless   If true, the WebDriver will run in headless mode (no UI display).
      * @param maximized  If true, the WebDriver will start in maximized window mode.
      */
-    public TestRunner(boolean headless, boolean maximized) {
-        this.options = new ChromeOptions();
-        if (headless) {
-            options.addArguments("--headless");
-        }
-        if (maximized) {
-            options.addArguments("--start-maximized");
-        }
+    public TestRunner(boolean headless, boolean maximized, String browser, int timeout) {
+        this.timeout = timeout;
+        BrowserDriverManager browserManager = new BrowserDriverManager();
+        this.driver = browserManager.createDriver(browser, headless, maximized);
+
+        // Set default timeouts
+        this.driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(timeout));
+        this.driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(timeout));
+        this.driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(timeout));
     }
 
     /**
@@ -56,20 +59,17 @@ public class TestRunner {
      */
     public void runTest(TestCase test) {
         try {
-            this.driver = new ChromeDriver(options);
-            this.wait = new WebDriverWait(driver, Duration.ofSeconds(TIMEOUT_SECONDS));
-            log.info("Running test: " + test.getName());
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeout));
 
-            // Clear any existing variables in the context before starting
             test.clearContext();
 
-            // Execute each command with access to the test context
             for (Command command : test.getCommands()) {
                 command.execute(driver, wait, test.getContext());
             }
 
             close();
         } catch (Exception e) {
+            log.error("Test execution failed: {}", e.getMessage());
             close();
             throw e;
         }
@@ -80,7 +80,11 @@ public class TestRunner {
      */
     public void close() {
         if (driver != null) {
-            driver.quit();
+            try {
+                driver.quit();
+            } catch (Exception e) {
+                log.error("Error while closing WebDriver: {}", e.getMessage());
+            }
         }
     }
 }
