@@ -28,6 +28,11 @@ public class LithiumInterpreter {
             return;
         }
 
+        if (args[0].equals("--version") || args[0].equals("-v")) {
+            CommandRegistry.displayVersion();
+            return;
+        }
+
         try {
             String commandName = args[0].toLowerCase();
             LithiumCommand command = CommandRegistry.getCommand(commandName);

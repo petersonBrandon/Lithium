@@ -12,7 +12,6 @@ package com.lithium.cli;
 import com.lithium.cli.commands.InitCommand;
 import com.lithium.cli.commands.RunCommand;
 import com.lithium.cli.util.LithiumTerminal;
-import org.jline.reader.*;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 
@@ -99,21 +98,7 @@ public class CommandRegistry {
                 .append("Use '<command> --help' for more information about a command.\n"));
     }
 
-    /**
-     * Read a line of input with command history and completion
-     *
-     * @param prompt The prompt to display
-     * @return The input line
-     */
-    public static String readLine(String prompt) {
-        try {
-            return terminal.readLine(prompt);
-        } catch (UserInterruptException e) {
-            // Handle Ctrl+C
-            return null;
-        } catch (EndOfFileException e) {
-            // Handle Ctrl+D
-            return null;
-        }
-    }
+   public static void displayVersion() {
+        terminal.printLogo();
+   }
 }
