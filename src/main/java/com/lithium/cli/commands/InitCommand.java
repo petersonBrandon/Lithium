@@ -11,11 +11,7 @@ package com.lithium.cli.commands;
 
 import com.lithium.cli.BaseLithiumCommand;
 import com.lithium.cli.util.ProjectConfig;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.reader.impl.DefaultParser;
-import org.jline.terminal.Terminal;
-import org.jline.terminal.TerminalBuilder;
+import com.lithium.cli.util.LithiumTerminal;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 
@@ -38,38 +34,8 @@ public class InitCommand extends BaseLithiumCommand {
                     "    assertText tag \"h1\" \"About Us\"\n" +
                     "}";
 
-    private Terminal terminal;
-    private LineReader lineReader;
+    private final LithiumTerminal terminal = LithiumTerminal.getInstance();
     private boolean quickMode;
-
-    private static final String BANNER = """
-    ╦  ┬┌┬┐┬ ┬┬┬ ┬┌┬┐
-    ║  │ │ ├─┤││ ││││
-    ╩═╝┴ ┴ ┴ ┴┴└─┘┴ ┴
-    Test Automation Framework
-    """;
-
-    private static final String[] SPINNER_FRAMES = {"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"};
-    private static final String CHECK_MARK = "✓";
-    private static final String CROSS_MARK = "✗";
-    private static final String ARROW = "→";
-
-    public InitCommand() {
-        try {
-            this.terminal = TerminalBuilder.builder()
-                    .system(true)
-                    .dumb(true)      // Allow dumb terminal as fallback
-                    .jansi(true)     // Enable Jansi support
-                    .build();
-
-            this.lineReader = LineReaderBuilder.builder()
-                    .terminal(terminal)
-                    .parser(new DefaultParser())
-                    .build();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to initialize terminal: " + e.getMessage(), e);
-        }
-    }
 
     @Override
     public String getDescription() {
@@ -86,11 +52,11 @@ public class InitCommand extends BaseLithiumCommand {
         quickMode = Arrays.asList(args).contains("--quick");
         String projectName;
 
-        printBanner();
+        terminal.printLogo();
         printWelcome();
 
         // Step 1: Project Name
-        printStep(1, "Project Setup");
+        terminal.printStep(1, "Project Setup");
         if (args.length > 1 && !args[1].startsWith("--")) {
             projectName = args[1];
             if (!validateProjectName(projectName)) {
@@ -105,28 +71,38 @@ public class InitCommand extends BaseLithiumCommand {
                     new ProjectConfig(projectName) :
                     promptForConfiguration(projectName);
 
+            terminal.printSeparator(true);
+
             // Step 2: Creating Project Structure
-            printStep(2, "Creating Project Structure");
-            showSpinner("Creating directories", 1000);
+            terminal.printStep(2, "Creating Project Structure");
+            terminal.showSpinner("Creating directories", 1000);
             createProjectStructure(projectName, config);
 
             // Step 3: Generating Configuration
-            printStep(3, "Generating Configuration");
-            showSpinner("Writing configuration file", 800);
+            terminal.printStep(3, "Generating Configuration");
+            terminal.showSpinner("Writing configuration file", 800);
             generateConfigFile(config);
 
             // Step 4: Sample Test (if applicable)
             if (!quickMode && promptForSampleTest()) {
-                printStep(4, "Creating Sample Test");
-                showSpinner("Generating sample test file", 600);
+                terminal.printStep(4, "Creating Sample Test");
+                terminal.showSpinner("Generating sample test file", 600);
                 generateSampleTest(projectName, config);
             }
 
+            terminal.printSeparator(true);
             printSuccess(projectName);
         } catch (Exception e) {
-            printError("Failed to initialize project: " + e.getMessage());
+            terminal.printError("Failed to initialize project: " + e.getMessage());
             System.exit(1);
         }
+    }
+
+    private void printWelcome() {
+        terminal.println(new AttributedStringBuilder()
+                .style(AttributedStyle.DEFAULT.foreground(LithiumTerminal.CYAN))
+                .append("Welcome to Lithium! Let's set up your new test automation project.\n"));
+        terminal.printSeparator(true);
     }
 
     private String getBrowserFromChoice(String choice) {
@@ -151,7 +127,7 @@ public class InitCommand extends BaseLithiumCommand {
     }
 
     private boolean promptForSampleTest() {
-        String response = lineReader.readLine("Would you like to create a sample test file? (yes/no, default is yes): ");
+        String response = terminal.readLine("Would you like to create a sample test file? (yes/no, default is yes): ");
         return response.isEmpty() || response.toLowerCase().startsWith("y");
     }
 
@@ -160,25 +136,9 @@ public class InitCommand extends BaseLithiumCommand {
         Files.write(testPath, SAMPLE_TEST_CONTENT.getBytes());
     }
 
-    private void printWelcome() {
-        terminal.writer().println(new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.CYAN))
-                .append("Welcome to Lithium! Let's set up your new test automation project.")
-                .toAnsi());
-        terminal.flush();
-    }
-
-    private void printInfo(String message) {
-        terminal.writer().println(new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT)
-                .append(message)
-                .toAnsi());
-        terminal.flush();
-    }
-
     private String promptForProjectName() {
         while (true) {
-            String name = lineReader.readLine("Enter a project name (no spaces allowed): ");
+            String name = terminal.readLine("Enter a project name (no spaces allowed): ");
             if (validateProjectName(name)) {
                 return name;
             }
@@ -187,13 +147,13 @@ public class InitCommand extends BaseLithiumCommand {
 
     private boolean validateProjectName(String name) {
         if (!VALID_PROJECT_NAME.matcher(name).matches()) {
-            printError("Error: Project names cannot contain spaces or special characters. Please try again.");
+            terminal.printError("Error: Project names cannot contain spaces or special characters. Please try again.");
             return false;
         }
 
         File projectDir = new File(name);
         if (projectDir.exists()) {
-            printError("Error: A folder named '" + name + "' already exists in this location. Please choose a different name.");
+            terminal.printError("Error: A folder named '" + name + "' already exists in this location. Please choose a different name.");
             return false;
         }
 
@@ -201,23 +161,13 @@ public class InitCommand extends BaseLithiumCommand {
     }
 
     private void createProjectStructure(String projectName, ProjectConfig config) throws IOException {
-        // Create main project directory
         Path projectPath = Paths.get(projectName);
         Files.createDirectory(projectPath);
 
-        // Create subdirectories
         String[] directories = {config.getTestDirectory(), "reports"};
         for (String dir : directories) {
             Files.createDirectory(projectPath.resolve(dir));
         }
-    }
-
-    private void printError(String message) {
-        terminal.writer().println(new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.RED))
-                .append(message)
-                .toAnsi());
-        terminal.flush();
     }
 
     private void generateConfigFile(ProjectConfig config) throws IOException {
@@ -305,106 +255,58 @@ public class InitCommand extends BaseLithiumCommand {
     }
 
     private void printSuccess(String projectName) {
-        terminal.writer().println(new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.GREEN))
-                .append("\nLithium Project '" + projectName + "' successfully initialized!")
-                .toAnsi());
+        terminal.println(new AttributedStringBuilder()
+                .style(AttributedStyle.DEFAULT.foreground(LithiumTerminal.GREEN).bold())
+                .append("\n✓ Project Successfully Initialized!\n"));
 
-        terminal.writer().println(new AttributedStringBuilder()
+        terminal.println(new AttributedStringBuilder()
+                .style(AttributedStyle.DEFAULT.foreground(LithiumTerminal.CYAN))
+                .append("Project: ")
                 .style(AttributedStyle.DEFAULT)
-                .append("\nUse cd " + projectName + " before writing your tests.")
-                .append("\nYou can now add your test files to the 'tests' folder and run them with 'lit run'.")
-                .toAnsi());
+                .append(projectName)
+                .append("\n"));
 
-        terminal.flush();
-    }
-
-    private void showSpinner(String message, int durationMs) {
-        Thread spinnerThread = new Thread(() -> {
-            int frame = 0;
-            long startTime = System.currentTimeMillis();
-            while (System.currentTimeMillis() - startTime < durationMs) {
-                terminal.writer().print("\r" + SPINNER_FRAMES[frame] + " " + message);
-                terminal.flush();
-                frame = (frame + 1) % SPINNER_FRAMES.length;
-                try {
-                    Thread.sleep(80);
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-            terminal.writer().print("\r" + CHECK_MARK + " " + message + "\n");
-            terminal.flush();
-        });
-        spinnerThread.start();
-        try {
-            spinnerThread.join();
-        } catch (InterruptedException e) {
-            // Handle interruption
-        }
-    }
-
-    private void printBanner() {
-        terminal.writer().println(new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.CYAN).bold())
-                .append(BANNER)
-                .toAnsi());
-        terminal.flush();
-    }
-
-    private void printStep(int stepNumber, String message) {
-        terminal.writer().println(new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.YELLOW))
-                .append("\nStep " + stepNumber + ": ")
+        terminal.println(new AttributedStringBuilder()
                 .style(AttributedStyle.DEFAULT)
-                .append(message)
-                .toAnsi());
-        terminal.flush();
-    }
-
-    private void printInputPrompt(String prompt) {
-        terminal.writer().print(new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.GREEN))
-                .append(ARROW + " ")
+                .append("Next steps:\n")
+                .append("  1. ")
+                .style(AttributedStyle.DEFAULT.foreground(LithiumTerminal.YELLOW))
+                .append("cd " + projectName)
                 .style(AttributedStyle.DEFAULT)
-                .append(prompt)
-                .toAnsi());
-        terminal.flush();
+                .append("\n  2. Add your test files to the 'tests' folder\n")
+                .append("  3. ")
+                .style(AttributedStyle.DEFAULT.foreground(LithiumTerminal.YELLOW))
+                .append("lit run <test-name>")
+                .style(AttributedStyle.DEFAULT)
+                .append(" to execute your tests\n"));
     }
 
-    // Update promptForConfiguration
     private ProjectConfig promptForConfiguration(String projectName) {
         ProjectConfig config = new ProjectConfig(projectName);
 
         // Base URL
-        printStep(2, "Configuration Setup");
-        printInputPrompt("Enter a base URL for your tests (leave blank to configure later): ");
-        String baseUrl = lineReader.readLine();
+        terminal.printStep(2, "Configuration Setup");
+        String baseUrl = terminal.readLine("Enter a base URL for your tests (leave blank to configure later): ");
         config.setBaseUrl(baseUrl);
 
         // Browser Selection
-        printInfo("\nAvailable Browsers:");
-        terminal.writer().println(new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT.foreground(AttributedStyle.CYAN))
+        terminal.printInfo("\nAvailable Browsers:");
+        terminal.println(new AttributedStringBuilder()
+                .style(AttributedStyle.DEFAULT.foreground(LithiumTerminal.CYAN))
                 .append("  1. Chrome  [default]\n")
                 .append("  2. Firefox\n")
                 .append("  3. Edge\n")
-                .append("  4. Safari")
-                .toAnsi());
-        terminal.flush();
+                .append("  4. Safari"));
 
-        printInputPrompt("Select browser (1-4): ");
-        String browserChoice = lineReader.readLine();
+        String browserChoice = terminal.readLine("Select browser (1-4): ");
         config.setBrowser(getBrowserFromChoice(browserChoice));
 
         // Timeout
-        printInputPrompt("Enter the default timeout in seconds (default: 30): ");
-        String timeoutStr = lineReader.readLine();
+        String timeoutStr = terminal.readLine("Enter the default timeout in seconds (default: 30): ");
         config.setDefaultTimeout(parseTimeout(timeoutStr));
 
         // Tests Folder
-        printInputPrompt("Enter the root test folder name (default: tests): ");
-        String testsFolder = lineReader.readLine();
+        String testsFolder = terminal.readLine("Enter the root test folder name (default: tests): ");
         config.setTestDirectory(testsFolder);
 
         return config;

@@ -16,8 +16,6 @@ import com.lithium.core.TestCase;
 import com.lithium.core.TestRunner;
 import com.lithium.exceptions.TestSyntaxException;
 import com.lithium.parser.TestParser;
-import org.jline.terminal.Terminal;
-import org.jline.terminal.TerminalBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,22 +23,13 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 public class RunCommand extends BaseLithiumCommand {
-    private final TerminalOutput output;
+    private final LithiumTerminal terminal;
     private final TestExecutionSummary summary;
     private ProjectConfig config;
 
     public RunCommand() {
-        try {
-            Terminal terminal = TerminalBuilder.builder()
-                    .system(true)
-                    .dumb(true)
-                    .jansi(true)
-                    .build();
-            this.output = new TerminalOutput(terminal);
-            this.summary = new TestExecutionSummary(output);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to initialize terminal: " + e.getMessage(), e);
-        }
+        this.terminal = LithiumTerminal.getInstance();
+        this.summary = new TestExecutionSummary();
     }
 
     @Override
@@ -76,7 +65,7 @@ public class RunCommand extends BaseLithiumCommand {
             String testFilePath = fileResolver.resolveTestFilePath(fileName);
             runTests(testFilePath, args, headless, maximized, browser, timeout);
         } catch (Exception e) {
-            output.printError("Error: " + e.getMessage());
+            terminal.printError("Error: " + e.getMessage());
             System.exit(1);
         } finally {
             if (runner != null) {
@@ -104,7 +93,7 @@ public class RunCommand extends BaseLithiumCommand {
     private void runSingleTest(String testName, Map<String, TestCase> testCases, TestRunner runner) {
         TestCase test = testCases.get(testName);
         if (test == null) {
-            output.printError("Test '" + testName + "' not found!");
+            terminal.printError("Test '" + testName + "' not found!");
             throw new IllegalArgumentException("Test '" + testName + "' not found!");
         }
         runAndLogTest(runner, test);
@@ -119,22 +108,22 @@ public class RunCommand extends BaseLithiumCommand {
         String errorMessage = null;
         ResultType result;
 
-        output.printSeparator(false);
-        output.printInfo("Running test: " + test.getName());
+        terminal.printSeparator(false);
+        terminal.printInfo("Running test: " + test.getName());
 
         try {
             runner.runTest(test);
             result = ResultType.PASS;
-            output.printSuccess("Status: ✓ PASSED");
+            terminal.printSuccess("Status: ✓ PASSED");
         } catch (Exception e) {
             result = ResultType.FAIL;
             errorMessage = e.getMessage();
-            output.printError("Status: ✗ FAILED");
-            output.printError("Error: " + errorMessage);
+            terminal.printError("Status: ✗ FAILED");
+            terminal.printError("Error: " + errorMessage);
         }
 
         LocalDateTime endTime = LocalDateTime.now();
-        output.printInfo("Duration: " +
+        terminal.printInfo("Duration: " +
                 java.time.Duration.between(startTime, endTime).toMillis() + " ms");
 
         summary.addResult(new TestResult(
@@ -159,7 +148,7 @@ public class RunCommand extends BaseLithiumCommand {
                 config = new ProjectConfig("Lithium Project");
             }
         } catch (IOException e) {
-            output.printError("Error loading config: " + e.getMessage());
+            terminal.printError("Error loading config: " + e.getMessage());
             config = new ProjectConfig("Lithium Project");
         }
     }
@@ -168,7 +157,7 @@ public class RunCommand extends BaseLithiumCommand {
         if (config.getTestDirectory() != null) {
             File testDir = new File(config.getTestDirectory());
             if (!testDir.exists() || !testDir.isDirectory()) {
-                output.printError("Warning: Configured test directory '" +
+                terminal.printError("Warning: Configured test directory '" +
                         config.getTestDirectory() + "' does not exist. Falling back to current directory.");
                 config.setTestDirectory(null);
             }

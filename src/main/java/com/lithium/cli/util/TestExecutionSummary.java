@@ -6,10 +6,10 @@ import java.util.List;
 
 public class TestExecutionSummary {
     private final List<TestResult> testResults = new ArrayList<>();
-    private final TerminalOutput output;
+    private final LithiumTerminal terminal;
 
-    public TestExecutionSummary(TerminalOutput output) {
-        this.output = output;
+    public TestExecutionSummary() {
+        this.terminal = LithiumTerminal.getInstance();
     }
 
     public void addResult(TestResult result) {
@@ -24,44 +24,44 @@ public class TestExecutionSummary {
         int failedTests = totalTests - passedTests;
         double successRate = totalTests > 0 ? (passedTests * 100.0 / totalTests) : 0;
 
-        output.printSeparator(true);
-        output.printInfo("                  TEST EXECUTION SUMMARY                     ");
-        output.printSeparator(true);
+        terminal.printSeparator(true);
+        terminal.printInfo("             TEST EXECUTION SUMMARY");
+        terminal.printSeparator(true);
 
         Duration totalDuration = Duration.between(
                 testResults.getFirst().startTime(),
                 testResults.getLast().endTime()
         );
 
-        output.printInfo("");
-        output.printInfo("Total Duration: " + totalDuration.toSeconds() + " seconds");
-        output.printInfo("Total Tests: " + totalTests);
-        output.printSuccess("Passed Tests: " + passedTests + " ✓");
-        output.printError("Failed Tests: " + failedTests + " ✗");
-        output.printInfo("Success Rate: " + String.format("%.2f", successRate) + "%");
-        output.printInfo("");
+        terminal.printInfo("");
+        terminal.printInfo("Total Duration: " + totalDuration.toSeconds() + " seconds");
+        terminal.printInfo("Total Tests: " + totalTests);
+        terminal.printSuccess("Passed Tests: " + passedTests + " ✓");
+        terminal.printError("Failed Tests: " + failedTests + " ✗");
+        terminal.printInfo("Success Rate: " + String.format("%.2f", successRate) + "%");
+        terminal.printInfo("");
 
         if (failedTests > 0) {
             printFailedTestDetails();
         }
 
-        output.printSeparator(true);
+        terminal.printSeparator(true);
     }
 
     private void printFailedTestDetails() {
-        output.printSeparator(false);
-        output.printError("FAILED TESTS DETAILS");
-        output.printSeparator(false);
+        terminal.printSeparator(false);
+        terminal.printError("FAILED TESTS DETAILS");
+        terminal.printSeparator(false);
 
         testResults.stream()
                 .filter(r -> r.result() == ResultType.FAIL)
                 .forEach(r -> {
-                    output.printError("Test Name: " + r.testName());
-                    output.printError("File: " + r.fileName());
-                    output.printError("Error: " + r.errorMessage());
-                    output.printError("Duration: " +
+                    terminal.printError("Test Name: " + r.testName());
+                    terminal.printError("File: " + r.fileName());
+                    terminal.printError("Error: " + r.errorMessage());
+                    terminal.printError("Duration: " +
                             Duration.between(r.startTime(), r.endTime()).toMillis() + " ms");
-                    output.printInfo("");
+                    terminal.printInfo("");
                 });
     }
 }

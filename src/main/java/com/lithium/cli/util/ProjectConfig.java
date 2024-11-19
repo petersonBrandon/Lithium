@@ -19,14 +19,14 @@ public class ProjectConfig {
     private String testDirectory = "tests";
     private boolean headless = false;
     private boolean maximizeWindow = true;
-    private ParallelExecutionConfig parallelExecution = new ParallelExecutionConfig();
+    private final ParallelExecutionConfig parallelExecution = new ParallelExecutionConfig();
     private String[] reportFormat = {"html", "json"};
     private String reportDirectory = "reports";
     private boolean enableScreenshotsOnFailure = true;
     private String logLevel = "info";
     private String logDirectory = "logs";
     private boolean saveExecutionLogs = true;
-    private Map<String, EnvironmentConfig> environments = new HashMap<>();
+    private final Map<String, EnvironmentConfig> environments = new HashMap<>();
     private String activeEnvironment = "dev";
 
     public ProjectConfig() {
