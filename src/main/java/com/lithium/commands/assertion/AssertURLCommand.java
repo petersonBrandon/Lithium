@@ -52,19 +52,19 @@ public class AssertURLCommand implements Command {
             assert currentUrl != null;
             if(!currentUrl.equals(expectedUrl)) {
                 throw new AssertionFailedException(String.format(
-                   "Line %s: Current URL %s does not match expected %s",
+                   "Line %s: Current URL '%s' does not match expected '%s'",
                    lineNumber,
                    currentUrl,
                    expectedUrl
                 ));
             }
 
-            log.info(String.format("Asserted current URL equals %s", expectedUrl));
+            log.info(String.format("Asserted current URL equals '%s'", expectedUrl));
         } catch (AssertionFailedException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getMessage());
         } catch (Exception e) {
             throw new CommandException(String.format(
-               "Line %s: Unexpected error when asserting URL %s",
+               "Line %s: Unexpected error when asserting URL '%s'",
                lineNumber,
                expectedUrl
             ));

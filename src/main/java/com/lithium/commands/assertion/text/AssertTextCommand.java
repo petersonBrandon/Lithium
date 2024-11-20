@@ -77,7 +77,7 @@ public class AssertTextCommand implements Command {
             // Log successful assertion
             log.info(String.format("Asserted element '%s %s' text equals '%s'", locator.getType(), locator.getValue(), expectedText));
         } catch (AssertionFailedException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getMessage());
         } catch (NoSuchElementException e) {
             throw new AssertionFailedException(String.format(
                     "Element with locator '%s %s' was not found",
