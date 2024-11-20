@@ -32,6 +32,7 @@ public class WaitCommand implements Command {
     private Locator locator;
     private final WaitType waitType;
     private final String timeoutSeconds;
+    private final int lineNumber;
 
     public enum WaitType {
         PRESENCE,
@@ -44,10 +45,11 @@ public class WaitCommand implements Command {
      *
      * @param locator The Locator used to identify the element to wait for.
      */
-    public WaitCommand(Locator locator, WaitType waitType, String timeoutSeconds) {
+    public WaitCommand(Locator locator, WaitType waitType, String timeoutSeconds, int lineNumber) {
         this.locator = locator;
         this.waitType = waitType;
         this.timeoutSeconds = timeoutSeconds;
+        this.lineNumber = lineNumber;
     }
 
     /**
@@ -71,29 +73,29 @@ public class WaitCommand implements Command {
 
         } catch (TimeoutException e) {
             String errorMsg = String.format(
-                    "Timeout waiting for element to be %s: %s %s",
-                    waitType, locator.getType(), locator.getValue()
+                    "Line %s: Timeout waiting for element to be %s: %s %s",
+                    lineNumber, waitType, locator.getType(), locator.getValue()
             );
             throw new CommandException(errorMsg);
 
         } catch (InvalidSelectorException e) {
             String errorMsg = String.format(
-                    "Invalid selector for element: %s %s",
-                    locator.getType(), locator.getValue()
+                    "Line %s: Invalid selector for element: %s %s",
+                    lineNumber, locator.getType(), locator.getValue()
             );
             throw new CommandException(errorMsg);
 
         } catch (NumberFormatException e) {
             String errorMsg = String.format(
-                    "Invalid timeout value: %s",
-                    timeoutSeconds
+                    "Line %s: Invalid timeout value: %s",
+                    lineNumber, timeoutSeconds
             );
             throw new CommandException(errorMsg);
 
         } catch (Exception e) {
             String errorMsg = String.format(
-                    "Unexpected error while waiting for element: %s %s",
-                    locator.getType(), locator.getValue()
+                    "Line %s: Unexpected error while waiting for element: %s %s",
+                    lineNumber, locator.getType(), locator.getValue()
             );
             throw new CommandException(errorMsg);
         }
@@ -109,7 +111,7 @@ public class WaitCommand implements Command {
         try {
             long timeout = Long.parseLong(timeoutStr);
             if (timeout <= 0) {
-                throw new IllegalArgumentException("Timeout must be greater than 0");
+                throw new IllegalArgumentException(String.format("Line %s: Timeout must be greater than 0", lineNumber));
             }
             if (timeout > MAX_TIMEOUT) {
                 log.warn(String.format("Specified timeout %ss exceeds maximum allowed (%ss). Using maximum timeout.",
@@ -118,7 +120,7 @@ public class WaitCommand implements Command {
             }
             return timeout;
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid timeout format: " + timeoutStr);
+            throw new IllegalArgumentException(String.format("Line %s: Invalid timeout format: %s", lineNumber, timeoutStr));
         }
     }
 
@@ -139,7 +141,7 @@ public class WaitCommand implements Command {
                 wait.until(ExpectedConditions.elementToBeClickable(locator.toSeleniumBy()));
                 break;
             default:
-                throw new IllegalStateException("Unexpected wait type: " + waitType);
+                throw new IllegalStateException(String.format("Line %s: Unexpected wait type: %s", lineNumber, waitType));
         }
     }
 }

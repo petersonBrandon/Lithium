@@ -29,7 +29,8 @@ public class WaitParser {
         return new WaitCommand(
                 LocatorParser.parse(tokens.get(0), tokens.get(1), lineNumber),
                 WaitUtils.parseWaitType(tokens.get(2), lineNumber),
-                timeout
+                timeout,
+                lineNumber
         );
     }
 }
