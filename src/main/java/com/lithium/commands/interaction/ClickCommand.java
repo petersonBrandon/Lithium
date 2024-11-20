@@ -25,14 +25,16 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 public class ClickCommand implements Command {
     private static final LithiumLogger log = LithiumLogger.getInstance();
     private Locator locator;
+    private final int lineNumber;
 
     /**
      * Constructs a ClickCommand with the specified Locator.
      *
      * @param locator The Locator used to find the element to be clicked.
      */
-    public ClickCommand(Locator locator) {
+    public ClickCommand(Locator locator, int lineNumber) {
         this.locator = locator;
+        this.lineNumber = lineNumber;
     }
 
     /**
@@ -50,31 +52,36 @@ public class ClickCommand implements Command {
             log.info(String.format("Clicked element: %s", locator));
         } catch (NoSuchElementException e) {
             throw new CommandException(String.format(
-                    "Element not found: '%s %s'",
+                    "Line %s: Element not found: '%s %s'",
+                    lineNumber,
                     locator.getType(),
                     locator.getValue()
             ));
         } catch (StaleElementReferenceException e) {
             throw new CommandException(String.format(
-                    "Stale element reference for: '%s %s'",
+                    "Line %s: Stale element reference for: '%s %s'",
+                    lineNumber,
                     locator.getType(),
                     locator.getValue()
             ));
         } catch (ElementClickInterceptedException e) {
             throw new CommandException(String.format(
-                    "Element click intercepted for: '%s %s'",
+                    "Line %s: Element click intercepted for: '%s %s'",
+                    lineNumber,
                     locator.getType(),
                     locator.getValue()
             ));
         } catch (TimeoutException e) {
             throw new CommandException(String.format(
-                    "Timeout waiting for clickable element: '%s %s'",
+                    "Line %s: Timeout waiting for clickable element: '%s %s'",
+                    lineNumber,
                     locator.getType(),
                     locator.getValue()
             ));
         } catch (Exception e) {
             throw new CommandException(String.format(
-                    "Unable to click element: '%s %s'",
+                    "Line %s: Unable to click element: '%s %s'",
+                    lineNumber,
                     locator.getType(),
                     locator.getValue()
             ));

@@ -26,6 +26,7 @@ public class TypeCommand implements Command {
     private static final LithiumLogger log = LithiumLogger.getInstance();
     private Locator locator;
     private final String text;
+    private final int lineNumber;
 
     /**
      * Constructs a TypeCommand with the specified Locator and text.
@@ -33,9 +34,10 @@ public class TypeCommand implements Command {
      * @param locator The Locator used to find the element to type into.
      * @param text    The text to be typed into the located element.
      */
-    public TypeCommand(Locator locator, String text) {
+    public TypeCommand(Locator locator, String text, int lineNumber) {
         this.locator = locator;
         this.text = text;
+        this.lineNumber = lineNumber;
     }
 
     /**
@@ -73,29 +75,29 @@ public class TypeCommand implements Command {
 
         } catch (TimeoutException e) {
             String errorMsg = String.format(
-                    "Timeout waiting for element to be clickable: %s %s",
-                    locator.getType(), locator.getValue()
+                    "Line %s: Timeout waiting for element to be clickable: %s %s",
+                    lineNumber, locator.getType(), locator.getValue()
             );
             throw new CommandException(errorMsg);
 
         } catch (ElementNotInteractableException e) {
             String errorMsg = String.format(
-                    "Element not interactable: %s %s",
-                    locator.getType(), locator.getValue()
+                    "Line %s: Element not interactable: %s %s",
+                    lineNumber, locator.getType(), locator.getValue()
             );
             throw new CommandException(errorMsg);
 
         } catch (StaleElementReferenceException e) {
             String errorMsg = String.format(
-                    "Element became stale: %s %s",
-                    locator.getType(), locator.getValue()
+                    "Line %s: Element became stale: %s %s",
+                    lineNumber, locator.getType(), locator.getValue()
             );
             throw new CommandException(errorMsg);
 
         } catch (Exception e) {
             String errorMsg = String.format(
-                    "Failed to type text into element: %s %s",
-                    locator.getType(), locator.getValue()
+                    "Line %s: Failed to type text into element: %s %s",
+                    lineNumber, locator.getType(), locator.getValue()
             );
             throw new CommandException(errorMsg);
         }
@@ -112,8 +114,8 @@ public class TypeCommand implements Command {
             return wait.until(ExpectedConditions.elementToBeClickable(locator.toSeleniumBy()));
         } catch (TimeoutException e) {
             throw new TimeoutException(String.format(
-                    "Element not clickable within timeout: %s %s",
-                    locator.getType(), locator.getValue()
+                    "Line %s: Element not clickable within timeout: %s %s",
+                    lineNumber, locator.getType(), locator.getValue()
             ));
         }
     }
