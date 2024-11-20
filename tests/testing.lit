@@ -30,3 +30,8 @@ test "Example" {
     closeTab 2;
     assertURL "${url}";
 }
+
+test "Number 2" {
+    open "https://www.google.com/";
+    assertURL "https://www.google.com/";
+}

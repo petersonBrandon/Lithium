@@ -64,18 +64,35 @@ public class RunCommand extends BaseLithiumCommand {
                 getEnvironmentBrowser(envConfig));
         int timeout = argsParser.getIntOption(cliArgs, "timeout", config.getDefaultTimeout());
 
-        TestRunner runner = null;
-
         try {
             String testFilePath = fileResolver.resolveTestFilePath(fileName);
-            runTests(testFilePath, args, headless, maximized, browser, timeout);
+            String baseUrl = getEnvironmentBaseUrl(getEnvironmentConfig());
+            TestRunnerConfig runnerConfig = new TestRunnerConfig(headless, maximized, browser, timeout, baseUrl);
+
+            runTests(testFilePath, args, runnerConfig);
         } catch (Exception e) {
             log.error("Error: " + e.getMessage());
             System.exit(1);
-        } finally {
-            if (runner != null) {
-                runner.close();
-            }
+        }
+    }
+
+    private static class TestRunnerConfig {
+        final boolean headless;
+        final boolean maximized;
+        final String browser;
+        final int timeout;
+        final String baseUrl;
+
+        TestRunnerConfig(boolean headless, boolean maximized, String browser, int timeout, String baseUrl) {
+            this.headless = headless;
+            this.maximized = maximized;
+            this.browser = browser;
+            this.timeout = timeout;
+            this.baseUrl = baseUrl;
+        }
+
+        TestRunner createRunner() {
+            return new TestRunner(headless, maximized, browser, timeout, baseUrl);
         }
     }
 
@@ -104,46 +121,44 @@ public class RunCommand extends BaseLithiumCommand {
         return config.getBaseUrl();
     }
 
-    private void runTests(String testFilePath, String[] args, boolean headless,
-                          boolean maximized, String browser, int timeout)
+    private void runTests(String testFilePath, String[] args, TestRunnerConfig runnerConfig)
             throws IOException, TestSyntaxException {
         TestParser parser = new TestParser();
         Map<String, TestCase> testCases = parser.parseFile(testFilePath);
 
-        String baseUrl = getEnvironmentBaseUrl(getEnvironmentConfig());
-        TestRunner runner = new TestRunner(headless, maximized, browser, timeout, baseUrl);
-
         if (args.length > 2 && !args[2].startsWith("--")) {
-            runSingleTest(args[2], testCases, runner);
+            runSingleTest(args[2], testCases, runnerConfig);
         } else {
-            runAllTests(testCases, runner);
+            runAllTests(testCases, runnerConfig);
         }
 
         summary.printSummary();
     }
 
-    private void runSingleTest(String testName, Map<String, TestCase> testCases, TestRunner runner) {
+    private void runSingleTest(String testName, Map<String, TestCase> testCases, TestRunnerConfig runnerConfig) {
         TestCase test = testCases.get(testName);
         if (test == null) {
             log.error("Test '" + testName + "' not found!");
             throw new IllegalArgumentException("Test '" + testName + "' not found!");
         }
-        runAndLogTest(runner, test);
+        runAndLogTest(test, runnerConfig);
     }
 
-    private void runAllTests(Map<String, TestCase> testCases, TestRunner runner) {
-        testCases.values().forEach(test -> runAndLogTest(runner, test));
+    private void runAllTests(Map<String, TestCase> testCases, TestRunnerConfig runnerConfig) {
+        testCases.values().forEach(test -> runAndLogTest(test, runnerConfig));
     }
 
-    private void runAndLogTest(TestRunner runner, TestCase test) {
+    private void runAndLogTest(TestCase test, TestRunnerConfig runnerConfig) {
         LocalDateTime startTime = LocalDateTime.now();
         String errorMessage = null;
         ResultType result;
+        TestRunner runner = null;
 
         log.printSeparator(false);
         log.title("Running test: " + test.getName());
 
         try {
+            runner = runnerConfig.createRunner();
             runner.runTest(test);
             result = ResultType.PASS;
             log.success("Status: ✓ PASSED");
@@ -152,6 +167,10 @@ public class RunCommand extends BaseLithiumCommand {
             errorMessage = e.getMessage();
             log.error("Status: ✗ FAILED");
             log.error("Error: " + errorMessage);
+        } finally {
+            if (runner != null) {
+                runner.close();
+            }
         }
 
         LocalDateTime endTime = LocalDateTime.now();
