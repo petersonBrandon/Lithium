@@ -144,7 +144,7 @@ public class LithiumLogger {
 
     public void title(String message) {
         terminal.writer().println(new AttributedStringBuilder()
-                .style(AttributedStyle.DEFAULT.foreground(3))
+                .style(AttributedStyle.DEFAULT.foreground(3).bold())
                 .append(message)
                 .toAnsi());
         terminal.flush();
