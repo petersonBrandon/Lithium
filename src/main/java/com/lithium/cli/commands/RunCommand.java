@@ -21,6 +21,7 @@ import com.lithium.util.logger.LogLevel;
 
 import java.io.*;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -79,11 +80,11 @@ public class RunCommand extends BaseLithiumCommand {
                 getEnvironmentBrowser(envConfig));
 
         try {
-            String testFilePath = fileResolver.resolveTestFilePath(fileName);
+            List<String> testFilePaths = fileResolver.resolveTestFilePaths(fileName);
             String baseUrl = getEnvironmentBaseUrl(getEnvironmentConfig());
             TestRunnerConfig runnerConfig = new TestRunnerConfig(headless, maximized, browser, timeout, baseUrl);
 
-            runTests(testFilePath, args, runnerConfig);
+            runTests(testFilePaths, args, runnerConfig);
         } catch (Exception e) {
             log.error("Error: " + e.getMessage());
             System.exit(1);
@@ -122,10 +123,14 @@ public class RunCommand extends BaseLithiumCommand {
         return config.getBaseUrl();
     }
 
-    private void runTests(String testFilePath, String[] args, TestRunnerConfig runnerConfig)
+    private void runTests(List<String> testFilePaths, String[] args, TestRunnerConfig runnerConfig)
             throws IOException, TestSyntaxException {
         TestParser parser = new TestParser();
-        Map<String, TestCase> testCases = parser.parseFile(testFilePath);
+        Map<String, TestCase> testCases = new HashMap<>();
+
+        for (String filePath : testFilePaths) {
+            testCases.putAll(parser.parseFile(filePath));
+        }
 
         if (args.length > 2 && !args[2].startsWith("--")) {
             runSingleTest(args[2], testCases, runnerConfig);
