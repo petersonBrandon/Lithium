@@ -19,6 +19,11 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class RefreshCommand implements Command {
     private static final LithiumLogger log = LithiumLogger.getInstance();
+    private final int lineNumber;
+
+    public RefreshCommand(int lineNumber) {
+        this.lineNumber = lineNumber;
+    }
 
     @Override
     public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
@@ -26,9 +31,9 @@ public class RefreshCommand implements Command {
             driver.navigate().refresh();
             log.info("Refreshed page");
         } catch (WebDriverException e) {
-            throw new CommandException("Failed to refresh page");
+            throw new CommandException(String.format("Line %s: Failed to refresh page", lineNumber));
         } catch (Exception e) {
-            throw new CommandException("Unexpected error occurred during page refresh");
+            throw new CommandException(String.format("Line %s: Unexpected error occurred during page refresh", lineNumber));
         }
     }
 }

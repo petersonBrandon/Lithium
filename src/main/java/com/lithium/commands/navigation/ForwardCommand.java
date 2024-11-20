@@ -19,6 +19,11 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class ForwardCommand implements Command {
     private static final LithiumLogger log = LithiumLogger.getInstance();
+    private final int lineNumber;
+
+    public ForwardCommand(int lineNumber) {
+        this.lineNumber = lineNumber;
+    }
 
     @Override
     public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
@@ -26,9 +31,9 @@ public class ForwardCommand implements Command {
             driver.navigate().forward();
             log.info("Navigated forward");
         } catch (WebDriverException e) {
-            throw new CommandException("Failed to navigate forward in browser history");
+            throw new CommandException(String.format("Line %s: Failed to navigate forward in browser history", lineNumber));
         } catch (Exception e) {
-            throw new CommandException("Unexpected error occurred during forward navigation");
+            throw new CommandException(String.format("Line %s: Unexpected error occurred during forward navigation", lineNumber));
         }
     }
 }

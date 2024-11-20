@@ -29,14 +29,16 @@ import java.util.Set;
 public class SwitchToWindowCommand implements Command {
     private static final LithiumLogger log = LithiumLogger.getInstance();
     private String windowIdentifier;
+    private final int lineNumber;
 
     /**
      * Constructs a SwitchToWindowCommand with the specified window identifier.
      *
      * @param windowIdentifier The window name/title or index to switch to.
      */
-    public SwitchToWindowCommand(String windowIdentifier) {
+    public SwitchToWindowCommand(String windowIdentifier, int lineNumber) {
         this.windowIdentifier = windowIdentifier;
+        this.lineNumber = lineNumber;
     }
 
     /**
@@ -52,12 +54,12 @@ public class SwitchToWindowCommand implements Command {
 
         try {
             if (windowIdentifier == null || windowIdentifier.trim().isEmpty()) {
-                throw new IllegalArgumentException("Window identifier cannot be null or empty");
+                throw new IllegalArgumentException(String.format("Line %s: Window identifier cannot be null or empty", lineNumber));
             }
 
             Set<String> windowHandles = driver.getWindowHandles();
             if (windowHandles.isEmpty()) {
-                throw new CommandException("No windows are currently open");
+                throw new CommandException(String.format("Line %s: No windows are currently open", lineNumber));
             }
 
             // Convert handles to list for index access
@@ -68,8 +70,8 @@ public class SwitchToWindowCommand implements Command {
                 int index = Integer.parseInt(windowIdentifier) - 1;
                 if (index < 0 || index >= handlesList.size()) {
                     throw new CommandException(String.format(
-                            "Window index %d is out of range. Available windows: %d",
-                            index, handlesList.size()));
+                            "Line %s: Window index %d is out of range. Available windows: %d",
+                            lineNumber, index, handlesList.size()));
                 }
                 driver.switchTo().window(handlesList.get(index));
                 log.info(String.format("Switched to window at index: %s", index));
@@ -87,24 +89,24 @@ public class SwitchToWindowCommand implements Command {
                 }
                 if (!windowFound) {
                     throw new CommandException(String.format(
-                            "No window found with title: %s", windowIdentifier));
+                            "Line %s: No window found with title: %s", lineNumber, windowIdentifier));
                 }
             }
 
         } catch (NoSuchWindowException e) {
-            String errorMsg = String.format("Window not found: %s", windowIdentifier);
+            String errorMsg = String.format("Line %s: Window not found: %s", lineNumber, windowIdentifier);
             throw new CommandException(errorMsg);
 
         } catch (TimeoutException e) {
-            String errorMsg = String.format("Timeout while switching to window: %s", windowIdentifier);
+            String errorMsg = String.format("Line %s: Timeout while switching to window: %s", lineNumber, windowIdentifier);
             throw new CommandException(errorMsg);
 
         } catch (IllegalArgumentException | CommandException e) {
             throw new CommandException(e.getMessage());
 
         } catch (Exception e) {
-            String errorMsg = String.format("Unexpected error while switching to window: %s",
-                    windowIdentifier);
+            String errorMsg = String.format("Line %s: Unexpected error while switching to window: %s",
+                    lineNumber, windowIdentifier);
             throw new CommandException(errorMsg);
         }
     }

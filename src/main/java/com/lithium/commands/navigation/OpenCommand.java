@@ -29,14 +29,16 @@ import java.net.URL;
 public class OpenCommand implements Command {
     private static final LithiumLogger log = LithiumLogger.getInstance();
     private final String url;
+    private final int lineNumber;
 
     /**
      * Constructs an OpenCommand with the specified URL.
      *
      * @param url The URL to be opened in the browser.
      */
-    public OpenCommand(String url) {
+    public OpenCommand(String url, int lineNumber) {
         this.url = url;
+        this.lineNumber = lineNumber;
     }
 
     /**
@@ -50,7 +52,7 @@ public class OpenCommand implements Command {
         String resolvedUrl = context.resolveVariables(url);
 
         if (resolvedUrl == null || resolvedUrl.trim().isEmpty()) {
-            throw new IllegalArgumentException("URL cannot be null or empty");
+            throw new IllegalArgumentException(String.format("Line %s: URL cannot be null or empty", lineNumber));
         }
 
         try {
@@ -60,20 +62,20 @@ public class OpenCommand implements Command {
             driver.get(resolvedUrl);
             log.info(String.format("Opened URL: %s", resolvedUrl));
         } catch (TimeoutException e) {
-            String errorMsg = String.format("Timeout while loading URL: %s", resolvedUrl);
+            String errorMsg = String.format("Line %s: Timeout while loading URL: %s", lineNumber, resolvedUrl);
             throw new CommandException(errorMsg);
 
         } catch (WebDriverException e) {
-            String errorMsg = String.format("Failed to load URL: %s",
-                    resolvedUrl);
+            String errorMsg = String.format("Line %s: Failed to load URL: %s",
+                    lineNumber, resolvedUrl);
             throw new CommandException(errorMsg);
 
         } catch (IllegalArgumentException | CommandException e) {
             throw new CommandException(e.getMessage());
 
         } catch (Exception e) {
-            String errorMsg = String.format("Unexpected error while opening URL: %s",
-                    resolvedUrl);
+            String errorMsg = String.format("Line %s: Unexpected error while opening URL: %s",
+                    lineNumber, resolvedUrl);
             throw new CommandException(errorMsg);
         }
     }
@@ -93,13 +95,13 @@ public class OpenCommand implements Command {
             String protocol = url.getProtocol().toLowerCase();
             if (!protocol.equals("http") && !protocol.equals("https")) {
                 throw new CommandException(
-                        String.format("Unsupported protocol: %s. Only HTTP and HTTPS are supported.",
-                                protocol)
+                        String.format("Line %s: Unsupported protocol: %s. Only HTTP and HTTPS are supported.",
+                                lineNumber, protocol)
                 );
             }
 
         } catch (MalformedURLException | URISyntaxException e) {
-            String errorMsg = String.format("Invalid URL format: %s", urlString);
+            String errorMsg = String.format("Line %s: Invalid URL format: %s", lineNumber, urlString);
             throw new CommandException(errorMsg);
         }
     }

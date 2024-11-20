@@ -23,39 +23,39 @@ public class NavigationParser {
 
     public static OpenCommand parseOpenCommand(String args, int lineNumber) throws TestSyntaxException {
         List<String> tokens = CommandArgParser.parseArgs(args, ArgPattern.TEXT_ONLY, lineNumber);
-        return new OpenCommand(tokens.getFirst());
+        return new OpenCommand(tokens.getFirst(), lineNumber);
     }
 
     public static BackCommand parseBackCommand(String args, int lineNumber) throws TestSyntaxException {
         CommandArgParser.parseArgs(args, ArgPattern.NONE, lineNumber);
-        return new BackCommand();
+        return new BackCommand(lineNumber);
     }
 
     public static ForwardCommand parseForwardCommand(String args, int lineNumber) throws TestSyntaxException {
         CommandArgParser.parseArgs(args, ArgPattern.NONE, lineNumber);
-        return new ForwardCommand();
+        return new ForwardCommand(lineNumber);
     }
 
     public static RefreshCommand parseRefreshCommand(String args, int lineNumber) throws TestSyntaxException {
         CommandArgParser.parseArgs(args, ArgPattern.NONE, lineNumber);
-        return new RefreshCommand();
+        return new RefreshCommand(lineNumber);
     }
 
     public static SwitchToWindowCommand parseSwitchToWindowCommand(String args, int lineNumber) throws TestSyntaxException {
         List<String> tokens = CommandArgParser.parseArgs(args, ArgPattern.TEXT_ONLY, lineNumber);
-        return new SwitchToWindowCommand(tokens.getFirst());
+        return new SwitchToWindowCommand(tokens.getFirst(), lineNumber);
     }
 
     public static OpenTabCommand parseOpenTabCommand(String args, int lineNumber) throws TestSyntaxException {
         List<String> tokens = CommandArgParser.parseArgs(args, ArgPattern.TEXT_ONLY, lineNumber);
-        return new OpenTabCommand(tokens.getFirst());
+        return new OpenTabCommand(tokens.getFirst(), lineNumber);
     }
 
     public static CloseTabCommand parseCloseTabCommand(String args, int lineNumber) throws TestSyntaxException {
         List<String> tokens = CommandArgParser.parseArgs(args, ArgPattern.OPTIONAL_TEXT, lineNumber);
         if(!tokens.isEmpty()) {
-            return new CloseTabCommand(tokens.getFirst());
+            return new CloseTabCommand(tokens.getFirst(), lineNumber);
         }
-        return new CloseTabCommand();
+        return new CloseTabCommand(lineNumber);
     }
 }

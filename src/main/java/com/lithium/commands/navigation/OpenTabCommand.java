@@ -31,14 +31,16 @@ import java.util.ArrayList;
 public class OpenTabCommand implements Command {
     private static final LithiumLogger log = LithiumLogger.getInstance();
     private String url;
+    private final int lineNumber;
 
     /**
      * Constructs an OpenTabCommand with the specified URL.
      *
      * @param url The URL to be opened in the new tab.
      */
-    public OpenTabCommand(String url) {
+    public OpenTabCommand(String url, int lineNumber) {
         this.url = url;
+        this.lineNumber = lineNumber;
     }
 
     /**
@@ -53,7 +55,7 @@ public class OpenTabCommand implements Command {
         url = context.resolveVariables(url);
 
         if (url == null || url.trim().isEmpty()) {
-            throw new IllegalArgumentException("URL cannot be null or empty");
+            throw new IllegalArgumentException(String.format("Line %s: URL cannot be null or empty", lineNumber));
         }
 
         try {
@@ -77,19 +79,19 @@ public class OpenTabCommand implements Command {
             log.info(String.format("Opened new tab and navigated to: %s", url));
 
         } catch (TimeoutException e) {
-            String errorMsg = String.format("Timeout while loading URL in new tab: %s", url);
+            String errorMsg = String.format("Line %s: Timeout while loading URL in new tab: %s", lineNumber, url);
             throw new CommandException(errorMsg);
 
         } catch (WebDriverException e) {
-            String errorMsg = String.format("Failed to open new tab or load URL: %s", url);
+            String errorMsg = String.format("Line %s: Failed to open new tab or load URL: %s", lineNumber, url);
             throw new CommandException(errorMsg);
 
         } catch (IllegalArgumentException | CommandException e) {
             throw new CommandException(e.getMessage());
 
         } catch (Exception e) {
-            String errorMsg = String.format("Unexpected error while opening new tab with URL: %s",
-                    url);
+            String errorMsg = String.format("Line %s: Unexpected error while opening new tab with URL: %s",
+                    lineNumber, url);
             throw new CommandException(errorMsg);
         }
     }

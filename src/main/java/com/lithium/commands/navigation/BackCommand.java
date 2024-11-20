@@ -19,6 +19,11 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class BackCommand implements Command {
     private static final LithiumLogger log = LithiumLogger.getInstance();
+    private final int lineNumber;
+
+    public BackCommand(int lineNumber) {
+        this.lineNumber = lineNumber;
+    }
 
     @Override
     public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
@@ -26,9 +31,9 @@ public class BackCommand implements Command {
             driver.navigate().back();
             log.info("Navigated back");
         } catch (WebDriverException e) {
-            throw new CommandException("Failed to navigate back in browser history");
+            throw new CommandException(String.format("Line %s: Failed to navigate back in browser history", lineNumber));
         } catch (Exception e) {
-            throw new CommandException("Unexpected error occurred during back navigation");
+            throw new CommandException(String.format("Line %s: Unexpected error occurred during back navigation", lineNumber));
         }
     }
 }

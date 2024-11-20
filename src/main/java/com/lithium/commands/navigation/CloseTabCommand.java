@@ -29,12 +29,13 @@ import java.util.Set;
 public class CloseTabCommand implements Command {
     private static final LithiumLogger log = LithiumLogger.getInstance();
     private String windowIdentifier;
+    private final int lineNumber;
 
     /**
      * Constructs a CloseTabCommand with no specific window identifier (closes current tab).
      */
-    public CloseTabCommand() {
-        this(null);
+    public CloseTabCommand(int lineNumber) {
+        this(null, lineNumber);
     }
 
     /**
@@ -42,8 +43,9 @@ public class CloseTabCommand implements Command {
      *
      * @param windowIdentifier The window name/title or index to close. If null, closes current tab.
      */
-    public CloseTabCommand(String windowIdentifier) {
+    public CloseTabCommand(String windowIdentifier, int lineNumber) {
         this.windowIdentifier = windowIdentifier;
+        this.lineNumber = lineNumber;
     }
 
     /**
@@ -59,7 +61,7 @@ public class CloseTabCommand implements Command {
             Set<String> windowHandles = driver.getWindowHandles();
 
             if (windowHandles.isEmpty()) {
-                throw new CommandException("No windows are currently open");
+                throw new CommandException(String.format("Line %s: No windows are currently open", lineNumber));
             }
 
             String currentHandle = driver.getWindowHandle();
@@ -71,7 +73,7 @@ public class CloseTabCommand implements Command {
                 String resolvedIdentifier = context.resolveVariables(windowIdentifier);
 
                 if (resolvedIdentifier.trim().isEmpty()) {
-                    throw new IllegalArgumentException("Window identifier cannot be empty");
+                    throw new IllegalArgumentException(String.format("Line %s: Window identifier cannot be empty", lineNumber));
                 }
 
                 ArrayList<String> handlesList = new ArrayList<>(windowHandles);
@@ -81,8 +83,8 @@ public class CloseTabCommand implements Command {
                     int index = Integer.parseInt(resolvedIdentifier) - 1;
                     if (index < 0 || index >= handlesList.size()) {
                         throw new CommandException(String.format(
-                                "Window index %d is out of range. Available windows: %d",
-                                index + 1, handlesList.size()));
+                                "Line %s: Window index %d is out of range. Available windows: %d",
+                                lineNumber, index + 1, handlesList.size()));
                     }
                     handleToClose = handlesList.get(index);
                 } catch (NumberFormatException e) {
@@ -101,7 +103,7 @@ public class CloseTabCommand implements Command {
                     }
                     if (!windowFound) {
                         throw new CommandException(String.format(
-                                "No window found with title: %s", resolvedIdentifier));
+                                "Line %s: No window found with title: %s", lineNumber, resolvedIdentifier));
                     }
                 }
             }
@@ -131,16 +133,16 @@ public class CloseTabCommand implements Command {
             }
 
         } catch (NoSuchWindowException e) {
-            throw new CommandException("Failed to switch windows: Window no longer exists");
+            throw new CommandException(String.format("Line %s: Failed to switch windows: Window no longer exists", lineNumber));
 
         } catch (WebDriverException e) {
-            throw new CommandException("Failed to close window: " + e.getMessage());
+            throw new CommandException(String.format("Line %s: Failed to close window: %s", lineNumber,  e.getMessage()));
 
         } catch (IllegalArgumentException | CommandException e) {
             throw new CommandException(e.getMessage());
 
         } catch (Exception e) {
-            throw new CommandException("Unexpected error while closing window: " + e.getMessage());
+            throw new CommandException(String.format("Line %s: Unexpected error while closing window: %s", lineNumber, e.getMessage()));
         }
     }
 }
