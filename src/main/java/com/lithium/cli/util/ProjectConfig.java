@@ -23,7 +23,6 @@ public class ProjectConfig {
     private String[] reportFormat = {"pdf", "html", "json"};
     private String reportDirectory = "reports";
     private boolean enableScreenshotsOnFailure = true;
-    private boolean enableScreenRecord = false;
     private String logLevel = "info";
     private String logDirectory = "logs";
     private boolean saveExecutionLogs = true;
@@ -63,9 +62,6 @@ public class ProjectConfig {
     public String[] getReportFormat() { return reportFormat; }
     public String getReportDirectory() { return reportDirectory; }
     public boolean isEnableScreenshotsOnFailure() { return enableScreenshotsOnFailure; }
-    public boolean isEnableScreenRecord() {
-        return enableScreenRecord;
-    }
     public String getLogLevel() { return logLevel; }
     public String getLogDirectory() { return logDirectory; }
     public boolean isSaveExecutionLogs() { return saveExecutionLogs; }
@@ -89,9 +85,6 @@ public class ProjectConfig {
     public void setReportDirectory(String reportDirectory) { this.reportDirectory = reportDirectory; }
     public void setEnableScreenshotsOnFailure(boolean enableScreenshotsOnFailure) {
         this.enableScreenshotsOnFailure = enableScreenshotsOnFailure;
-    }
-    public void setEnableScreenRecord(boolean enableScreenRecord) {
-        this.enableScreenRecord = enableScreenRecord;
     }
     public void setLogLevel(String logLevel) { this.logLevel = logLevel; }
     public void setLogDirectory(String logDirectory) { this.logDirectory = logDirectory; }
