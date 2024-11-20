@@ -16,6 +16,7 @@ import com.lithium.core.TestCase;
 import com.lithium.core.TestRunner;
 import com.lithium.exceptions.TestSyntaxException;
 import com.lithium.parser.TestParser;
+import com.lithium.util.LithiumLogger;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,12 +24,11 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 public class RunCommand extends BaseLithiumCommand {
-    private final LithiumTerminal terminal;
+    private static final LithiumLogger log = LithiumLogger.getInstance();
     private final TestExecutionSummary summary;
     private ProjectConfig config;
 
     public RunCommand() {
-        this.terminal = LithiumTerminal.getInstance();
         this.summary = new TestExecutionSummary();
     }
 
@@ -70,7 +70,7 @@ public class RunCommand extends BaseLithiumCommand {
             String testFilePath = fileResolver.resolveTestFilePath(fileName);
             runTests(testFilePath, args, headless, maximized, browser, timeout);
         } catch (Exception e) {
-            terminal.printError("Error: " + e.getMessage());
+            log.error("Error: " + e.getMessage());
             System.exit(1);
         } finally {
             if (runner != null) {
@@ -125,7 +125,7 @@ public class RunCommand extends BaseLithiumCommand {
     private void runSingleTest(String testName, Map<String, TestCase> testCases, TestRunner runner) {
         TestCase test = testCases.get(testName);
         if (test == null) {
-            terminal.printError("Test '" + testName + "' not found!");
+            log.error("Test '" + testName + "' not found!");
             throw new IllegalArgumentException("Test '" + testName + "' not found!");
         }
         runAndLogTest(runner, test);
@@ -140,22 +140,22 @@ public class RunCommand extends BaseLithiumCommand {
         String errorMessage = null;
         ResultType result;
 
-        terminal.printSeparator(false);
-        terminal.printInfo("Running test: " + test.getName());
+        log.printSeparator(false);
+        log.title("Running test: " + test.getName());
 
         try {
             runner.runTest(test);
             result = ResultType.PASS;
-            terminal.printSuccess("Status: ✓ PASSED");
+            log.success("Status: ✓ PASSED");
         } catch (Exception e) {
             result = ResultType.FAIL;
             errorMessage = e.getMessage();
-            terminal.printError("Status: ✗ FAILED");
-            terminal.printError("Error: " + errorMessage);
+            log.error("Status: ✗ FAILED");
+            log.error("Error: " + errorMessage);
         }
 
         LocalDateTime endTime = LocalDateTime.now();
-        terminal.printInfo("Duration: " +
+        log.basic("Duration: " +
                 java.time.Duration.between(startTime, endTime).toMillis() + " ms");
 
         summary.addResult(new TestResult(
@@ -180,7 +180,7 @@ public class RunCommand extends BaseLithiumCommand {
                 config = new ProjectConfig("Lithium Project");
             }
         } catch (IOException e) {
-            terminal.printError("Error loading config: " + e.getMessage());
+            log.error("Error loading config: " + e.getMessage());
             config = new ProjectConfig("Lithium Project");
         }
     }
@@ -189,7 +189,7 @@ public class RunCommand extends BaseLithiumCommand {
         if (config.getTestDirectory() != null) {
             File testDir = new File(config.getTestDirectory());
             if (!testDir.exists() || !testDir.isDirectory()) {
-                terminal.printError("Warning: Configured test directory '" +
+                log.error("Warning: Configured test directory '" +
                         config.getTestDirectory() + "' does not exist. Falling back to current directory.");
                 config.setTestDirectory(null);
             }
