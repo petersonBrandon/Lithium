@@ -114,7 +114,7 @@ public class LithiumTerminal {
     public void printSuccess(String message) {
         println(new AttributedStringBuilder()
                 .style(AttributedStyle.DEFAULT.foreground(GREEN))
-                .append(CHECK_MARK + " " + message));
+                .append(message));
     }
 
     public void printInfo(String message) {
