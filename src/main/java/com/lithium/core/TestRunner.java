@@ -9,8 +9,10 @@
 
 package com.lithium.core;
 
+import com.lithium.cli.util.ProjectConfig;
 import com.lithium.commands.Command;
 import com.lithium.exceptions.CommandException;
+import com.lithium.util.capture.ScreenshotCapture;
 import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -27,7 +29,7 @@ public class TestRunner {
 
     private final WebDriver driver;
     private final int timeout;
-    private final String baseUrl;
+    private final ProjectConfig config;
 
     /**
      * Constructs a TestRunner with specified options for headless and maximized browser settings.
@@ -38,9 +40,9 @@ public class TestRunner {
      * @param timeout    The timeout in seconds for various WebDriver operations.
      * @param baseUrl    The base URL to initialize the browser with.
      */
-    public TestRunner(boolean headless, boolean maximized, String browser, int timeout, String baseUrl) {
+    public TestRunner(boolean headless, boolean maximized, String browser, int timeout, String baseUrl, ProjectConfig config) {
         this.timeout = timeout;
-        this.baseUrl = baseUrl;
+        this.config = config;
 
         BrowserDriverManager browserManager = new BrowserDriverManager();
         this.driver = browserManager.createDriver(browser, headless, maximized);
@@ -79,11 +81,9 @@ public class TestRunner {
             }
 
             close();
-        } catch (CommandException e) {
-            close();
-            throw e;
         } catch (Exception e) {
-            log.error(String.format("Test execution failed: %s", e.getMessage()));
+            ScreenshotCapture.captureScreenshot(driver, test.getName(), config);
+            log.error(e.getMessage());
             close();
             throw e;
         }

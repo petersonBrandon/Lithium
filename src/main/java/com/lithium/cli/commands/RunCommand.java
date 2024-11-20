@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 public class RunCommand extends BaseLithiumCommand {
     private static final LithiumLogger log = LithiumLogger.getInstance();
     private final TestExecutionLogger testLogger;
-    private ProjectConfig config;
+    private static ProjectConfig config;
     private String fileName;
 
     public RunCommand() {
@@ -261,7 +261,7 @@ public class RunCommand extends BaseLithiumCommand {
     private record TestRunnerConfig(boolean headless, boolean maximized, String browser, int timeout, String baseUrl) {
 
         TestRunner createRunner() {
-            return new TestRunner(headless, maximized, browser, timeout, baseUrl);
+            return new TestRunner(headless, maximized, browser, timeout, baseUrl, config);
         }
     }
 }
