@@ -145,4 +145,45 @@ public class LithiumLogger {
     public void fatal(String message) {
         log(LogLevel.FATAL, message);
     }
+
+    // Extras
+
+    public void printSeparator(boolean isMain) {
+        String SEPARATOR = "════════════════════════════════════════════════════════════";
+        String SUB_SEPARATOR = "────────────────────────────────────────────────────────";
+        terminal.writer().println(new AttributedStringBuilder()
+                .style(AttributedStyle.DEFAULT.foreground(12))
+                .append(isMain ? SEPARATOR : SUB_SEPARATOR)
+                .toAnsi());
+        terminal.flush();
+    }
+
+    public void title(String message) {
+        terminal.writer().println(new AttributedStringBuilder()
+                .style(AttributedStyle.DEFAULT.foreground(3))
+                .append(message)
+                .toAnsi());
+        terminal.flush();
+    }
+
+    public void success(String message) {
+        terminal.writer().println(new AttributedStringBuilder()
+                .style(AttributedStyle.DEFAULT.foreground(2))
+                .append(message)
+                .toAnsi());
+        terminal.flush();
+    }
+
+    public void fail(String message) {
+        terminal.writer().println(new AttributedStringBuilder()
+                .style(AttributedStyle.DEFAULT.foreground(1))
+                .append(message)
+                .toAnsi());
+        terminal.flush();
+    }
+
+    public void basic(String message) {
+        terminal.writer().println(message);
+        terminal.flush();
+    }
 }
