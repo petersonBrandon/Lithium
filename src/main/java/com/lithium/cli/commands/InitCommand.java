@@ -190,6 +190,7 @@ public class InitCommand extends BaseLithiumCommand {
             appendJsonProperty(json, "browser", config.getBrowser(), true);
             appendJsonProperty(json, "headless", config.isHeadless(), true);
             appendJsonProperty(json, "maximizeWindow", config.isMaximizeWindow(), true);
+            appendJsonProperty(json, "testRetryCount", config.getTestRetryCount(), true);
 
             // Parallel execution
             json.append("    \"parallelExecution\": {\n");
@@ -249,6 +250,12 @@ public class InitCommand extends BaseLithiumCommand {
     }
 
     private void appendJsonProperty(StringBuilder json, String key, boolean value, boolean addComma) {
+        json.append("    \"").append(key).append("\": ").append(value);
+        if (addComma) json.append(",");
+        json.append("\n");
+    }
+
+    private void appendJsonProperty(StringBuilder json, String key, int value, boolean addComma) {
         json.append("    \"").append(key).append("\": ").append(value);
         if (addComma) json.append(",");
         json.append("\n");

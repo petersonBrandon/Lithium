@@ -182,10 +182,11 @@ public class RunCommand extends BaseLithiumCommand {
     }
 
     private void runAndLogTest(TestCase test, TestRunnerConfig runnerConfig) {
+        int maxRetries = config.getTestRetryCount();
+        int currentAttempt = 0;
         LocalDateTime startTime = LocalDateTime.now();
         String errorMessage = null;
-        ResultType result;
-        TestRunner runner = null;
+        ResultType result = ResultType.FAIL;
         ProjectConfig.ParallelExecutionConfig parallelConfig = config.getParallelExecution();
 
         if(!parallelConfig.isEnabled()) {
@@ -193,26 +194,51 @@ public class RunCommand extends BaseLithiumCommand {
         }
         log.title("Running test: " + test.getName());
 
-        try {
-            runner = runnerConfig.createRunner();
-            runner.runTest(test);
-            result = ResultType.PASS;
-            if(parallelConfig.isEnabled()) {
-                log.success(String.format("%s Status: ✓ PASSED", test.getName()));
-            } else {
-                log.success("Status: ✓ PASSED");
-            }
-        } catch (Exception e) {
-            result = ResultType.FAIL;
-            errorMessage = e.getMessage();
-            if(parallelConfig.isEnabled()) {
-                log.fail(String.format("%s Status: ✗ FAILED", test.getName()));
-            } else {
-                log.fail("Status: ✗ FAILED");
-            }
-        } finally {
-            if (runner != null) {
-                runner.close();
+        while (currentAttempt <= maxRetries) {
+            TestRunner runner = null;
+            try {
+                // Log retry attempt
+                if (currentAttempt > 0) {
+                    log.warn(String.format("Retry Attempt %d for test: %s",
+                            currentAttempt, test.getName()));
+                }
+
+                runner = runnerConfig.createRunner();
+                runner.runTest(test);
+                result = ResultType.PASS;
+                errorMessage = null;
+
+                if(parallelConfig.isEnabled()) {
+                    log.success(String.format("%s Status: ✓ PASSED", test.getName()));
+                } else {
+                    log.success("Status: ✓ PASSED");
+                }
+                break;  // Test passed, exit retry loop
+            } catch (Exception e) {
+                errorMessage = e.getMessage();
+
+                if(parallelConfig.isEnabled()) {
+                    log.fail(String.format("%s Attempt %d Failed: %s",
+                            test.getName(), currentAttempt + 1, errorMessage));
+                } else {
+                    log.fail(String.format("Attempt %d Failed: %s",
+                            currentAttempt + 1, errorMessage));
+                }
+
+                currentAttempt++;
+
+                // If max retries reached, log final failure
+                if (currentAttempt > maxRetries) {
+                    if(parallelConfig.isEnabled()) {
+                        log.fail(String.format("%s Status: ✗ FAILED (All retry attempts exhausted)", test.getName()));
+                    } else {
+                        log.fail("Status: ✗ FAILED (All retry attempts exhausted)");
+                    }
+                }
+            } finally {
+                if (runner != null) {
+                    runner.close();
+                }
             }
         }
 

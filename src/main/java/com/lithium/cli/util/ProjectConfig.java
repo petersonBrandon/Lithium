@@ -19,6 +19,7 @@ public class ProjectConfig {
     private String testDirectory = "tests";
     private boolean headless = false;
     private boolean maximizeWindow = true;
+    private int testRetryCount = 0;
     private final ParallelExecutionConfig parallelExecution = new ParallelExecutionConfig();
     private String[] reportFormat = {"pdf", "html", "json"};
     private String reportDirectory = "reports";
@@ -58,6 +59,9 @@ public class ProjectConfig {
     public String getTestDirectory() { return testDirectory; }
     public boolean isHeadless() { return headless; }
     public boolean isMaximizeWindow() { return maximizeWindow; }
+    public int getTestRetryCount() {
+        return testRetryCount;
+    }
     public ParallelExecutionConfig getParallelExecution() { return parallelExecution; }
     public String[] getReportFormat() { return reportFormat; }
     public String getReportDirectory() { return reportDirectory; }
@@ -81,6 +85,9 @@ public class ProjectConfig {
     }
     public void setHeadless(boolean headless) { this.headless = headless; }
     public void setMaximizeWindow(boolean maximizeWindow) { this.maximizeWindow = maximizeWindow; }
+    public void setTestRetryCount(int testRetryCount) {
+        this.testRetryCount = testRetryCount;
+    }
     public void setReportFormat(String[] reportFormat) { this.reportFormat = reportFormat; }
     public void setReportDirectory(String reportDirectory) { this.reportDirectory = reportDirectory; }
     public void setEnableScreenshotsOnFailure(boolean enableScreenshotsOnFailure) {
