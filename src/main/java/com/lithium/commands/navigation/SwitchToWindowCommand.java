@@ -12,8 +12,7 @@ package com.lithium.commands.navigation;
 import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
 import com.lithium.exceptions.CommandException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.NoSuchWindowException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.TimeoutException;
@@ -28,7 +27,7 @@ import java.util.Set;
  * This command can switch to a window either by its name/title or by index.
  */
 public class SwitchToWindowCommand implements Command {
-    private static final Logger log = LogManager.getLogger(SwitchToWindowCommand.class);
+    private static final LithiumLogger log = LithiumLogger.getInstance();
     private String windowIdentifier;
 
     /**
@@ -73,7 +72,7 @@ public class SwitchToWindowCommand implements Command {
                             index, handlesList.size()));
                 }
                 driver.switchTo().window(handlesList.get(index));
-                log.info("Switched to window at index: {}", index);
+                log.info(String.format("Switched to window at index: %s", index));
                 return;
             } catch (NumberFormatException e) {
                 // Not an integer, try to find window by title/name
@@ -82,7 +81,7 @@ public class SwitchToWindowCommand implements Command {
                     driver.switchTo().window(handle);
                     if (Objects.equals(driver.getTitle(), windowIdentifier)) {
                         windowFound = true;
-                        log.info("Successfully switched to window with title: {}", windowIdentifier);
+                        log.info(String.format("Successfully switched to window with title: %s", windowIdentifier));
                         break;
                     }
                 }

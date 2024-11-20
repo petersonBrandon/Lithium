@@ -11,8 +11,7 @@ package com.lithium.commands.utility.data;
 
 import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -21,7 +20,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  * This command allows for dynamic data storage that can be used by other commands.
  */
 public class SetCommand implements Command {
-    private static final Logger log = LogManager.getLogger(SetCommand.class);
+    private static final LithiumLogger log = LithiumLogger.getInstance();
     private final String variableName;
     private final String value;
 

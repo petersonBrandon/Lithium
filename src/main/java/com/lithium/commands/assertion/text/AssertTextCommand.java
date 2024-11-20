@@ -13,8 +13,7 @@ import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
 import com.lithium.exceptions.AssertionFailedException;
 import com.lithium.locators.Locator;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -28,7 +27,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  * through the provided TestContext.
  */
 public class AssertTextCommand implements Command {
-    private static final Logger log = LogManager.getLogger(AssertTextCommand.class);
+    private static final LithiumLogger log = LithiumLogger.getInstance();
     private Locator locator;
     private String expectedText;
 
@@ -74,7 +73,7 @@ public class AssertTextCommand implements Command {
             }
 
             // Log successful assertion
-            log.info("Asserted element '{} {}' text equals '{}'", locator.getType(), locator.getValue(), expectedText);
+            log.info(String.format("Asserted element '%s %s' text equals '%s'", locator.getType(), locator.getValue(), expectedText));
         } catch (AssertionFailedException e) {
             throw new RuntimeException(e);
         } catch (NoSuchElementException e) {

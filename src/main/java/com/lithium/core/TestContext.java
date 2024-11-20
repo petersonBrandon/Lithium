@@ -9,8 +9,7 @@
 
 package com.lithium.core;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.lithium.util.logger.LithiumLogger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +22,7 @@ import java.util.regex.Pattern;
  * resolve variable references in strings.
  */
 public class TestContext {
-    private static final Logger log = LogManager.getLogger(TestContext.class);
+    private static final LithiumLogger log = LithiumLogger.getInstance();
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{([^}]+)}");
 
     private final Map<String, String> variables;

@@ -1,8 +1,7 @@
-package com.lithium.util;
+package com.lithium.util.logger;
 
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
-import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 
@@ -11,21 +10,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class LithiumLogger {
-    // Enum for log levels with priorities
-    public enum LogLevel {
-        NONE(0), FATAL(1), ERROR(2), WARN(3), INFO(4), DEBUG(5), TRACE(6);
-
-        private final int priority;
-
-        LogLevel(int priority) {
-            this.priority = priority;
-        }
-
-        public int getPriority() {
-            return priority;
-        }
-    }
-
     private LogLevel currentLevel = LogLevel.INFO;
     private String logFormat = "{level}: {message}";
     private String timestampFormat = "HH:mm:ss";
@@ -64,7 +48,7 @@ public class LithiumLogger {
     }
 
     // Core logging method
-    private void log(LogLevel level, String message) {
+    public void log(LogLevel level, String message) {
         if (currentLevel == LogLevel.NONE || level.getPriority() > currentLevel.getPriority()) {
             return;
         }

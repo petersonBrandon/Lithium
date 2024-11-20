@@ -13,8 +13,7 @@ import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
 import com.lithium.exceptions.CommandException;
 import com.lithium.locators.Locator;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -24,7 +23,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  * This command waits until the element is clickable before performing the click action.
  */
 public class ClickCommand implements Command {
-    private static final Logger log = LogManager.getLogger(ClickCommand.class);
+    private static final LithiumLogger log = LithiumLogger.getInstance();
     private Locator locator;
 
     /**
@@ -48,7 +47,7 @@ public class ClickCommand implements Command {
             locator = new Locator(locator.getType(), context.resolveVariables(locator.getValue()));
             WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator.toSeleniumBy()));
             element.click();
-            log.info("Clicked element: {}", locator);
+            log.info(String.format("Clicked element: %s", locator));
         } catch (NoSuchElementException e) {
             throw new CommandException(String.format(
                     "Element not found: '%s %s'",

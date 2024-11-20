@@ -1,6 +1,6 @@
 package com.lithium.cli.util;
 
-import com.lithium.util.LithiumLogger;
+import com.lithium.util.logger.LithiumLogger;
 
 import java.time.Duration;
 import java.util.ArrayList;

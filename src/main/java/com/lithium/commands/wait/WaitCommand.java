@@ -13,8 +13,7 @@ import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
 import com.lithium.exceptions.CommandException;
 import com.lithium.locators.Locator;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.InvalidSelectorException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
@@ -28,7 +27,7 @@ import java.time.Duration;
  * This command pauses the execution until the specified element is found in the DOM.
  */
 public class WaitCommand implements Command {
-    private static final Logger log = LogManager.getLogger(WaitCommand.class);
+    private static final LithiumLogger log = LithiumLogger.getInstance();
     private static final long MAX_TIMEOUT = 300;
     private Locator locator;
     private final WaitType waitType;
@@ -67,8 +66,8 @@ public class WaitCommand implements Command {
             WebDriverWait customWait = new WebDriverWait(driver, Duration.ofSeconds(timeout));
             waitForElement(customWait);
 
-            log.info("Waited for element to be {}: {} {} (timeout: {}s)",
-                    waitType, locator.getType(), locator.getValue(), timeout);
+            log.info(String.format("Waited for element to be %s: %s %s (timeout: %ss)",
+                    waitType, locator.getType(), locator.getValue(), timeout));
 
         } catch (TimeoutException e) {
             String errorMsg = String.format(
@@ -113,8 +112,8 @@ public class WaitCommand implements Command {
                 throw new IllegalArgumentException("Timeout must be greater than 0");
             }
             if (timeout > MAX_TIMEOUT) {
-                log.warn("Specified timeout {}s exceeds maximum allowed ({}s). Using maximum timeout.",
-                        timeout, MAX_TIMEOUT);
+                log.warn(String.format("Specified timeout %ss exceeds maximum allowed (%ss). Using maximum timeout.",
+                        timeout, MAX_TIMEOUT));
                 return MAX_TIMEOUT;
             }
             return timeout;

@@ -11,8 +11,7 @@ package com.lithium;
 
 import com.lithium.cli.CommandRegistry;
 import com.lithium.cli.LithiumCommand;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.lithium.util.logger.LithiumLogger;
 
 /**
  * The LithiumInterpreter class is responsible for executing Lithium test files (.lit).
@@ -20,7 +19,7 @@ import org.apache.logging.log4j.Logger;
  * depending on the arguments provided.
  */
 public class LithiumInterpreter {
-    private static final Logger log = LogManager.getLogger(LithiumInterpreter.class);
+    private static final LithiumLogger log = LithiumLogger.getInstance();
 
     public static void main(String[] args) {
         if (args.length == 0 || args[0].equals("--help") || args[0].equals("-h")) {

@@ -12,8 +12,7 @@ package com.lithium.parser;
 import com.lithium.core.TestCase;
 import com.lithium.commands.Command;
 import com.lithium.exceptions.TestSyntaxException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.lithium.util.logger.LithiumLogger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -27,7 +26,7 @@ import java.util.regex.Pattern;
  *
  */
 public class TestParser {
-    private static final Logger log = LogManager.getLogger(TestParser.class);
+    private static final LithiumLogger log = LithiumLogger.getInstance();
     private static final Pattern TEST_PATTERN = Pattern.compile("test\\s+\"([^\"]+)\"\\s*\\{\\s*$");
 
     private final Map<String, TestCase> testCases;

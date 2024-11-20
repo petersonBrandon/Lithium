@@ -12,8 +12,7 @@ package com.lithium.commands.navigation;
 import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
 import com.lithium.exceptions.CommandException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
@@ -30,7 +29,7 @@ import java.util.ArrayList;
  * This command opens a new tab, switches to it, and then loads the given URL.
  */
 public class OpenTabCommand implements Command {
-    private static final Logger log = LogManager.getLogger(OpenTabCommand.class);
+    private static final LithiumLogger log = LithiumLogger.getInstance();
     private String url;
 
     /**
@@ -75,7 +74,7 @@ public class OpenTabCommand implements Command {
 
             // Navigate to the URL
             driver.get(url);
-            log.info("Opened new tab and navigated to: {}", url);
+            log.info(String.format("Opened new tab and navigated to: %s", url));
 
         } catch (TimeoutException e) {
             String errorMsg = String.format("Timeout while loading URL in new tab: %s", url);

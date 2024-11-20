@@ -12,8 +12,7 @@ package com.lithium.commands.navigation;
 import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
 import com.lithium.exceptions.CommandException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
@@ -28,7 +27,7 @@ import java.net.URL;
  * This command instructs the WebDriver to load the given URL.
  */
 public class OpenCommand implements Command {
-    private static final Logger log = LogManager.getLogger(OpenCommand.class);
+    private static final LithiumLogger log = LithiumLogger.getInstance();
     private final String url;
 
     /**
@@ -59,7 +58,7 @@ public class OpenCommand implements Command {
             validateUrl(resolvedUrl);
 
             driver.get(resolvedUrl);
-            log.info("Opened URL: {}", resolvedUrl);
+            log.info(String.format("Opened URL: %s", resolvedUrl));
         } catch (TimeoutException e) {
             String errorMsg = String.format("Timeout while loading URL: %s", resolvedUrl);
             throw new CommandException(errorMsg);

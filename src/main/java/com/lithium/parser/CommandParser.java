@@ -12,8 +12,7 @@ package com.lithium.parser;
 import com.lithium.commands.*;
 import com.lithium.exceptions.TestSyntaxException;
 import com.lithium.parser.commandTypes.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.lithium.util.logger.LithiumLogger;
 
 /**
  * The CommandParser class is responsible for parsing script commands in the
@@ -22,7 +21,7 @@ import org.apache.logging.log4j.Logger;
  * for execution.
  */
 public class CommandParser {
-    private static final Logger log = LogManager.getLogger(CommandParser.class);
+    private static final LithiumLogger log = LithiumLogger.getInstance();
 
     /**
      * Parses a single script command line and returns the corresponding Command object.

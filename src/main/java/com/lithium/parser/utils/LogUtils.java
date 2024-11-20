@@ -11,7 +11,7 @@ package com.lithium.parser.utils;
 
 import com.lithium.commands.utility.LogCommand;
 import com.lithium.exceptions.TestSyntaxException;
-import org.apache.logging.log4j.Level;
+import com.lithium.util.logger.LogLevel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -69,33 +69,33 @@ public class LogUtils {
         String message = args[1];
         String contextData = args[2];
 
-        Level level = parseLogLevel(logLevel, lineNumber);
+        LogLevel level = parseLogLevel(logLevel, lineNumber);
 
         if (contextData == null || contextData.isEmpty()) {
             return new LogCommand(message, level);
         }
 
-        return new LogCommand(message, level, parseContextData(contextData, lineNumber));
+        return new LogCommand(message, level);
     }
 
     /**
-     * Converts a log level string to a Log4j `Level` object.
+     * Converts a log level string to a Lithium `LogLevel` object.
      *
      * @param logLevel   the log level string
      * @param lineNumber the line number for error reporting
-     * @return the corresponding Log4j `Level`
+     * @return the corresponding Lithium `LogLevel`
      * @throws TestSyntaxException if the log level is invalid
      */
-    private static Level parseLogLevel(String logLevel, int lineNumber) throws TestSyntaxException {
-        if (logLevel == null) return Level.INFO;
+    private static LogLevel parseLogLevel(String logLevel, int lineNumber) throws TestSyntaxException {
+        if (logLevel == null) return LogLevel.INFO;
 
         return switch (logLevel.toLowerCase()) {
-            case "trace" -> Level.TRACE;
-            case "debug" -> Level.DEBUG;
-            case "info" -> Level.INFO;
-            case "warn" -> Level.WARN;
-            case "error" -> Level.ERROR;
-            case "fatal" -> Level.FATAL;
+            case "trace" -> LogLevel.TRACE;
+            case "debug" -> LogLevel.DEBUG;
+            case "info" -> LogLevel.INFO;
+            case "warn" -> LogLevel.WARN;
+            case "error" -> LogLevel.ERROR;
+            case "fatal" -> LogLevel.FATAL;
             default -> throw new TestSyntaxException(
                     "Invalid log level '" + logLevel + "'. Valid levels are: trace, debug, info, warn, error, fatal",
                     lineNumber

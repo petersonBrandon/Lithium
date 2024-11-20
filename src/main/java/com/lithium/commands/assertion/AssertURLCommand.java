@@ -10,12 +10,10 @@
 package com.lithium.commands.assertion;
 
 import com.lithium.commands.Command;
-import com.lithium.commands.assertion.text.AssertTextCommand;
 import com.lithium.core.TestContext;
 import com.lithium.exceptions.AssertionFailedException;
 import com.lithium.exceptions.CommandException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -24,7 +22,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  * to an expected URL.
  */
 public class AssertURLCommand implements Command {
-    private static final Logger log = LogManager.getLogger(AssertTextCommand.class);
+    private static final LithiumLogger log = LithiumLogger.getInstance();
     private String expectedUrl;
 
     /**
@@ -58,7 +56,7 @@ public class AssertURLCommand implements Command {
                 ));
             }
 
-            log.info("Asserted current URL equals {}", expectedUrl);
+            log.info(String.format("Asserted current URL equals %s", expectedUrl));
         } catch (AssertionFailedException e) {
             throw new RuntimeException(e);
         } catch (Exception e) {

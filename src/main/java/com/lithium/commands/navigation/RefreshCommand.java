@@ -12,14 +12,13 @@ package com.lithium.commands.navigation;
 import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
 import com.lithium.exceptions.CommandException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class RefreshCommand implements Command {
-    private static final Logger log = LogManager.getLogger(RefreshCommand.class);
+    private static final LithiumLogger log = LithiumLogger.getInstance();
 
     @Override
     public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {

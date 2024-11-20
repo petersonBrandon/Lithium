@@ -13,8 +13,7 @@ import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
 import com.lithium.exceptions.CommandException;
 import com.lithium.locators.Locator;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -24,7 +23,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  * This command waits until the element is clickable, clears any existing text, and then types the specified text.
  */
 public class TypeCommand implements Command {
-    private static final Logger log = LogManager.getLogger(TypeCommand.class);
+    private static final LithiumLogger log = LithiumLogger.getInstance();
     private Locator locator;
     private final String text;
 
@@ -69,8 +68,8 @@ public class TypeCommand implements Command {
             // Verify the text was entered correctly
             verifyTextEntered(element, resolvedText);
 
-            log.info("Typed '{}' into element: {} {}",
-                    resolvedText, locator.getType(), locator.getValue());
+            log.info(String.format("Typed '%s' into element: %s %s",
+                    resolvedText, locator.getType(), locator.getValue()));
 
         } catch (TimeoutException e) {
             String errorMsg = String.format(
@@ -133,11 +132,11 @@ public class TypeCommand implements Command {
             }
 
             if (!actualValue.contains(expectedText)) {
-                log.warn("Typed text verification failed. Expected text '{}' not found in element. Actual text: '{}'",
-                        expectedText, actualValue);
+                log.warn(String.format("Typed text verification failed. Expected text '%s' not found in element. Actual text: '%s'",
+                        expectedText, actualValue));
             }
         } catch (Exception e) {
-            log.warn("Unable to verify typed text: {}", e.getMessage());
+            log.warn(String.format("Unable to verify typed text: %s", e.getMessage()));
         }
     }
 }

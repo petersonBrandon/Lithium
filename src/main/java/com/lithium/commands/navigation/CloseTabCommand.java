@@ -12,8 +12,7 @@ package com.lithium.commands.navigation;
 import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
 import com.lithium.exceptions.CommandException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.NoSuchWindowException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
@@ -28,7 +27,7 @@ import java.util.Set;
  * This command can close a specific tab by its title/name or index, or the current tab if no specification is provided.
  */
 public class CloseTabCommand implements Command {
-    private static final Logger log = LogManager.getLogger(CloseTabCommand.class);
+    private static final LithiumLogger log = LithiumLogger.getInstance();
     private String windowIdentifier;
 
     /**
@@ -115,7 +114,7 @@ public class CloseTabCommand implements Command {
             // Close the window
             driver.close();
             if(windowIdentifier != null) {
-                log.info("Successfully closed window {}", windowIdentifier);
+                log.info(String.format("Successfully closed window %s", windowIdentifier));
             } else {
                 log.info("Closed current window");
             }

@@ -16,7 +16,7 @@ import com.lithium.core.TestCase;
 import com.lithium.core.TestRunner;
 import com.lithium.exceptions.TestSyntaxException;
 import com.lithium.parser.TestParser;
-import com.lithium.util.LithiumLogger;
+import com.lithium.util.logger.LithiumLogger;
 
 import java.io.File;
 import java.io.IOException;
