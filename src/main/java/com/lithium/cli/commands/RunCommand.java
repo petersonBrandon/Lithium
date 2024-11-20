@@ -206,9 +206,9 @@ public class RunCommand extends BaseLithiumCommand {
             result = ResultType.FAIL;
             errorMessage = e.getMessage();
             if(parallelConfig.isEnabled()) {
-                log.error(String.format("%s Status: ✗ FAILED", test.getName()));
+                log.fail(String.format("%s Status: ✗ FAILED", test.getName()));
             } else {
-                log.error("Status: ✗ FAILED");
+                log.fail("Status: ✗ FAILED");
             }
         } finally {
             if (runner != null) {
