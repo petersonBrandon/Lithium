@@ -17,6 +17,7 @@ import com.lithium.core.TestRunner;
 import com.lithium.exceptions.TestSyntaxException;
 import com.lithium.parser.TestParser;
 import com.lithium.util.logger.LithiumLogger;
+import com.lithium.util.logger.LogLevel;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -68,6 +69,9 @@ public class RunCommand extends BaseLithiumCommand {
             config.getParallelExecution().setEnabled(true);
         }
 
+        LogLevel logLevel = LogLevel.valueOf(config.getLogLevel().toUpperCase());
+        log.setLogLevel(logLevel);
+
         // Use environment values with fallbacks
         boolean headless = !argsParser.getBooleanOption(cliArgs, "headed", !config.isHeadless());
         boolean maximized = argsParser.getBooleanOption(cliArgs, "maximized", config.isMaximizeWindow());
@@ -86,25 +90,12 @@ public class RunCommand extends BaseLithiumCommand {
         }
     }
 
-    private static class TestRunnerConfig {
-        final boolean headless;
-        final boolean maximized;
-        final String browser;
-        final int timeout;
-        final String baseUrl;
-
-        TestRunnerConfig(boolean headless, boolean maximized, String browser, int timeout, String baseUrl) {
-            this.headless = headless;
-            this.maximized = maximized;
-            this.browser = browser;
-            this.timeout = timeout;
-            this.baseUrl = baseUrl;
-        }
+    private record TestRunnerConfig(boolean headless, boolean maximized, String browser, int timeout, String baseUrl) {
 
         TestRunner createRunner() {
-            return new TestRunner(headless, maximized, browser, timeout, baseUrl);
+                return new TestRunner(headless, maximized, browser, timeout, baseUrl);
+            }
         }
-    }
 
     private ProjectConfig.EnvironmentConfig getEnvironmentConfig() {
         String activeEnv = config.getActiveEnvironment();
