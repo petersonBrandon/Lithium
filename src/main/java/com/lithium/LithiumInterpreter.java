@@ -13,6 +13,9 @@ import com.lithium.cli.CommandRegistry;
 import com.lithium.cli.LithiumCommand;
 import com.lithium.util.logger.LithiumLogger;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * The LithiumInterpreter class is responsible for executing Lithium test files (.lit).
  * It parses the specified file and runs test cases either in headless or maximized mode,
@@ -22,6 +25,9 @@ public class LithiumInterpreter {
     private static final LithiumLogger log = LithiumLogger.getInstance();
 
     public static void main(String[] args) {
+        Logger seleniumLogger = Logger.getLogger("org.openqa.selenium");
+        seleniumLogger.setLevel(Level.SEVERE);
+
         if (args.length == 0 || args[0].equals("--help") || args[0].equals("-h")) {
             CommandRegistry.displayHelp();
             return;
