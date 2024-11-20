@@ -18,6 +18,7 @@ import com.lithium.exceptions.TestSyntaxException;
 import com.lithium.parser.TestParser;
 import com.lithium.util.logger.LithiumLogger;
 import com.lithium.util.logger.LogLevel;
+import com.lithium.util.reporter.LithiumReporter;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -31,11 +32,11 @@ import java.util.stream.Collectors;
 
 public class RunCommand extends BaseLithiumCommand {
     private static final LithiumLogger log = LithiumLogger.getInstance();
-    private final TestExecutionSummary summary;
+    private final TestExecutionLogger testLogger;
     private ProjectConfig config;
 
     public RunCommand() {
-        this.summary = new TestExecutionSummary();
+        this.testLogger = new TestExecutionLogger();
     }
 
     @Override
@@ -91,13 +92,6 @@ public class RunCommand extends BaseLithiumCommand {
         }
     }
 
-    private record TestRunnerConfig(boolean headless, boolean maximized, String browser, int timeout, String baseUrl) {
-
-        TestRunner createRunner() {
-                return new TestRunner(headless, maximized, browser, timeout, baseUrl);
-            }
-        }
-
     private ProjectConfig.EnvironmentConfig getEnvironmentConfig() {
         String activeEnv = config.getActiveEnvironment();
         if (activeEnv != null && !activeEnv.isEmpty()) {
@@ -138,7 +132,19 @@ public class RunCommand extends BaseLithiumCommand {
             runAllTests(testCases, runnerConfig);
         }
 
-        summary.printSummary();
+        testLogger.printSummary();
+        generateReports(testLogger.getResults());
+    }
+
+    private void generateReports(List<TestResult> testResults) {
+        if (config.getReportFormat() != null && config.getReportFormat().length != 0) {
+            LithiumReporter reporter = new LithiumReporter(
+                    config.getReportDirectory(),
+                    List.of(config.getReportFormat()),
+                    config.getProjectName()
+            );
+            reporter.generateReports(testResults);
+        }
     }
 
     private void runSingleTest(String testName, Map<String, TestCase> testCases, TestRunnerConfig runnerConfig) {
@@ -213,7 +219,7 @@ public class RunCommand extends BaseLithiumCommand {
         log.basic("Duration: " +
                 java.time.Duration.between(startTime, endTime).toMillis() + " ms");
 
-        summary.addResult(new TestResult(
+        testLogger.addResult(new TestResult(
                 test.getName(),
                 test.getName(),
                 result,
@@ -248,6 +254,13 @@ public class RunCommand extends BaseLithiumCommand {
                         config.getTestDirectory() + "' does not exist. Falling back to current directory.");
                 config.setTestDirectory(null);
             }
+        }
+    }
+
+    private record TestRunnerConfig(boolean headless, boolean maximized, String browser, int timeout, String baseUrl) {
+
+        TestRunner createRunner() {
+            return new TestRunner(headless, maximized, browser, timeout, baseUrl);
         }
     }
 }

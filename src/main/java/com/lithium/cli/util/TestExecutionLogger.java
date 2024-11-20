@@ -6,12 +6,16 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TestExecutionSummary {
+public class TestExecutionLogger {
     private final List<TestResult> testResults = new ArrayList<>();
     private static final LithiumLogger log = LithiumLogger.getInstance();
 
     public void addResult(TestResult result) {
         testResults.add(result);
+    }
+
+    public List<TestResult> getResults() {
+        return testResults;
     }
 
     public void printSummary() {
