@@ -64,8 +64,8 @@ public class RunCommand extends BaseLithiumCommand {
 
         int threadCount = argsParser.getIntOption(cliArgs, "threads", config.getParallelExecution().getThreadCount());
         config.getParallelExecution().setThreadCount(threadCount);
-        if(config.canCliOverride()) {
-            config.getParallelExecution().setEnabled(argsParser.argExists(cliArgs, "threads"));
+        if(config.canCliOverride() && argsParser.argExists(cliArgs, "threads")) {
+            config.getParallelExecution().setEnabled(true);
         }
 
         // Use environment values with fallbacks
