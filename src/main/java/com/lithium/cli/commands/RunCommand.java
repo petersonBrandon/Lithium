@@ -34,6 +34,7 @@ public class RunCommand extends BaseLithiumCommand {
     private static final LithiumLogger log = LithiumLogger.getInstance();
     private final TestExecutionLogger testLogger;
     private ProjectConfig config;
+    private String fileName;
 
     public RunCommand() {
         this.testLogger = new TestExecutionLogger();
@@ -59,7 +60,7 @@ public class RunCommand extends BaseLithiumCommand {
         CommandLineArgsParser argsParser = new CommandLineArgsParser(config);
 
         Map<String, String> cliArgs = argsParser.parseArgs(args);
-        String fileName = args[1];
+        fileName = args[1];
 
         ProjectConfig.EnvironmentConfig envConfig = getEnvironmentConfig();
 
@@ -133,15 +134,16 @@ public class RunCommand extends BaseLithiumCommand {
         }
 
         testLogger.printSummary();
-        generateReports(testLogger.getResults());
+        generateReports(testLogger.getResults(), fileName);
     }
 
-    private void generateReports(List<TestResult> testResults) {
+    private void generateReports(List<TestResult> testResults, String testSource) {
         if (config.getReportFormat() != null && config.getReportFormat().length != 0) {
             LithiumReporter reporter = new LithiumReporter(
                     config.getReportDirectory(),
                     List.of(config.getReportFormat()),
-                    config.getProjectName()
+                    config.getProjectName(),
+                    testSource
             );
             reporter.generateReports(testResults);
         }
@@ -208,7 +210,6 @@ public class RunCommand extends BaseLithiumCommand {
             } else {
                 log.error("Status: ✗ FAILED");
             }
-            log.error("Error: " + errorMessage);
         } finally {
             if (runner != null) {
                 runner.close();
