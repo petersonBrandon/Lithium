@@ -26,23 +26,28 @@ public class CommandLineArgsParser {
     }
 
     public boolean getBooleanOption(Map<String, String> cliArgs, String key, boolean defaultValue) {
-        if (!config.getCliOverride()) return defaultValue;
+        if (!config.canCliOverride()) return defaultValue;
         String value = cliArgs.get(key);
         return value != null ? Boolean.parseBoolean(value) : defaultValue;
     }
 
     public String getStringOption(Map<String, String> cliArgs, String key, String defaultValue) {
-        if (!config.getCliOverride()) return defaultValue;
+        if (!config.canCliOverride()) return defaultValue;
         return cliArgs.getOrDefault(key, defaultValue);
     }
 
     public int getIntOption(Map<String, String> cliArgs, String key, int defaultValue) {
-        if (!config.getCliOverride()) return defaultValue;
+        if (!config.canCliOverride()) return defaultValue;
         String value = cliArgs.get(key);
         try {
             return value != null ? Integer.parseInt(value) : defaultValue;
         } catch (NumberFormatException e) {
             return defaultValue;
         }
+    }
+
+    public boolean argExists(Map<String, String> cliArgs, String key) {
+        String value = cliArgs.get(key);
+        return value != null;
     }
 }

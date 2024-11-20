@@ -18,10 +18,14 @@ import com.lithium.exceptions.TestSyntaxException;
 import com.lithium.parser.TestParser;
 import com.lithium.util.logger.LithiumLogger;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class RunCommand extends BaseLithiumCommand {
     private static final LithiumLogger log = LithiumLogger.getInstance();
@@ -40,7 +44,7 @@ public class RunCommand extends BaseLithiumCommand {
     @Override
     public String getUsage() {
         return "lit run <file-name> [test-name] [--headed=true|false] [--maximized=true|false] " +
-                "[--browser=<browser_name>] [--timeout=<seconds>]";
+                "[--browser=<browser_name>] [--timeout=<seconds>] [--threads=<thread_count>]";
     }
 
     @Override
@@ -54,15 +58,21 @@ public class RunCommand extends BaseLithiumCommand {
         Map<String, String> cliArgs = argsParser.parseArgs(args);
         String fileName = args[1];
 
-        // Get environment-specific configuration
         ProjectConfig.EnvironmentConfig envConfig = getEnvironmentConfig();
+
+        int timeout = argsParser.getIntOption(cliArgs, "timeout", config.getDefaultTimeout());
+
+        int threadCount = argsParser.getIntOption(cliArgs, "threads", config.getParallelExecution().getThreadCount());
+        config.getParallelExecution().setThreadCount(threadCount);
+        if(config.canCliOverride()) {
+            config.getParallelExecution().setEnabled(argsParser.argExists(cliArgs, "threads"));
+        }
 
         // Use environment values with fallbacks
         boolean headless = !argsParser.getBooleanOption(cliArgs, "headed", !config.isHeadless());
         boolean maximized = argsParser.getBooleanOption(cliArgs, "maximized", config.isMaximizeWindow());
         String browser = argsParser.getStringOption(cliArgs, "browser",
                 getEnvironmentBrowser(envConfig));
-        int timeout = argsParser.getIntOption(cliArgs, "timeout", config.getDefaultTimeout());
 
         try {
             String testFilePath = fileResolver.resolveTestFilePath(fileName);
@@ -145,7 +155,26 @@ public class RunCommand extends BaseLithiumCommand {
     }
 
     private void runAllTests(Map<String, TestCase> testCases, TestRunnerConfig runnerConfig) {
-        testCases.values().forEach(test -> runAndLogTest(test, runnerConfig));
+        ProjectConfig.ParallelExecutionConfig parallelConfig = config.getParallelExecution();
+
+        if (parallelConfig.isEnabled()) {
+            // Use ExecutorService for parallel test execution
+            ExecutorService executorService = Executors.newFixedThreadPool(parallelConfig.getThreadCount());
+
+            List<CompletableFuture<Void>> futures = testCases.values().stream()
+                    .map(test -> CompletableFuture.runAsync(() -> {
+                        runAndLogTest(test, runnerConfig);
+                    }, executorService))
+                    .collect(Collectors.toList());
+
+            // Wait for all tests to complete
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+            executorService.shutdown();
+        } else {
+            // Existing sequential execution
+            testCases.values().forEach(test -> runAndLogTest(test, runnerConfig));
+        }
     }
 
     private void runAndLogTest(TestCase test, TestRunnerConfig runnerConfig) {
@@ -153,19 +182,30 @@ public class RunCommand extends BaseLithiumCommand {
         String errorMessage = null;
         ResultType result;
         TestRunner runner = null;
+        ProjectConfig.ParallelExecutionConfig parallelConfig = config.getParallelExecution();
 
-        log.printSeparator(false);
+        if(!parallelConfig.isEnabled()) {
+            log.printSeparator(false);
+        }
         log.title("Running test: " + test.getName());
 
         try {
             runner = runnerConfig.createRunner();
             runner.runTest(test);
             result = ResultType.PASS;
-            log.success("Status: ✓ PASSED");
+            if(parallelConfig.isEnabled()) {
+                log.success(String.format("%s Status: ✓ PASSED", test.getName()));
+            } else {
+                log.success("Status: ✓ PASSED");
+            }
         } catch (Exception e) {
             result = ResultType.FAIL;
             errorMessage = e.getMessage();
-            log.error("Status: ✗ FAILED");
+            if(parallelConfig.isEnabled()) {
+                log.error(String.format("%s Status: ✗ FAILED", test.getName()));
+            } else {
+                log.error("Status: ✗ FAILED");
+            }
             log.error("Error: " + errorMessage);
         } finally {
             if (runner != null) {

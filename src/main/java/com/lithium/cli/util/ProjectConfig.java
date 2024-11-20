@@ -51,7 +51,7 @@ public class ProjectConfig {
     public String getDescription() { return description; }
     public String getVersion() { return version; }
     public String getAuthor() { return author; }
-    public boolean getCliOverride() { return cliOverride; }
+    public boolean canCliOverride() { return cliOverride; }
     public String getBaseUrl() { return baseUrl; }
     public String getBrowser() { return browser; }
     public int getDefaultTimeout() { return defaultTimeout; }

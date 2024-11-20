@@ -184,7 +184,7 @@ public class InitCommand extends BaseLithiumCommand {
             appendJsonProperty(json, "author", config.getAuthor(), true);
 
             // Core settings
-            appendJsonProperty(json, "cliOverride", config.getCliOverride(), true);
+            appendJsonProperty(json, "cliOverride", config.canCliOverride(), true);
             appendJsonProperty(json, "baseUrl", config.getBaseUrl(), true);
             appendJsonProperty(json, "defaultTimeout", String.valueOf(config.getDefaultTimeout()), true);
             appendJsonProperty(json, "browser", config.getBrowser(), true);
