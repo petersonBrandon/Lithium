@@ -17,7 +17,7 @@ import com.lithium.util.logger.LithiumLogger;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,7 +36,7 @@ public class TestParser {
      * Constructs the TestParser object
      */
     public TestParser() {
-        this.testCases = new HashMap<>();
+        this.testCases = new LinkedHashMap<>();
         this.commandParser = new CommandParser();
     }
 
@@ -44,7 +44,7 @@ public class TestParser {
      * Parse the specified test file for execution.
      *
      * @param filePath path to test file location
-     * @return A map of test cases
+     * @return A map of test cases in file order
      * @throws IOException if file cannot be read
      * @throws TestSyntaxException if .lit file syntax is incorrect
      */
