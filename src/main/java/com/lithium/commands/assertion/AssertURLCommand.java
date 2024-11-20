@@ -24,14 +24,16 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 public class AssertURLCommand implements Command {
     private static final LithiumLogger log = LithiumLogger.getInstance();
     private String expectedUrl;
+    private final int lineNumber;
 
     /**
      * Construct the AssertURLCommand with and expected URL
      *
      * @param expectedUrl URL where you expect to be
      */
-    public AssertURLCommand(String expectedUrl) {
+    public AssertURLCommand(String expectedUrl, int lineNumber) {
         this.expectedUrl = expectedUrl;
+        this.lineNumber = lineNumber;
     }
 
     /**
@@ -50,7 +52,8 @@ public class AssertURLCommand implements Command {
             assert currentUrl != null;
             if(!currentUrl.equals(expectedUrl)) {
                 throw new AssertionFailedException(String.format(
-                   "Current URL %s does not match expected %s",
+                   "Line %s: Current URL %s does not match expected %s",
+                   lineNumber,
                    currentUrl,
                    expectedUrl
                 ));
@@ -61,7 +64,8 @@ public class AssertURLCommand implements Command {
             throw new RuntimeException(e);
         } catch (Exception e) {
             throw new CommandException(String.format(
-               "Unexpected error when asserting URL %s",
+               "Line %s: Unexpected error when asserting URL %s",
+               lineNumber,
                expectedUrl
             ));
         }

@@ -29,7 +29,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 public class AssertTextCommand implements Command {
     private static final LithiumLogger log = LithiumLogger.getInstance();
     private Locator locator;
-    private String expectedText;
+    private final String expectedText;
+    private final int lineNumber;
 
     /**
      * Constructs an AssertTextCommand instance with the specified locator
@@ -38,9 +39,10 @@ public class AssertTextCommand implements Command {
      * @param locator      the Locator object representing the element to assert
      * @param expectedText the expected text value for the element
      */
-    public AssertTextCommand(Locator locator, String expectedText) {
+    public AssertTextCommand(Locator locator, String expectedText, int lineNumber) {
         this.locator = locator;
         this.expectedText = expectedText;
+        this.lineNumber = lineNumber;
     }
 
     /**
@@ -67,8 +69,8 @@ public class AssertTextCommand implements Command {
             String actualText = element.getText().trim();
             if (!actualText.equals(expectedText)) {
                 throw new AssertionFailedException(String.format(
-                        "\nText assertion failed for element '%s'\nExpected: '%s'\nActual: '%s'",
-                        locator.getValue(), expectedText, actualText
+                        "\nLine %s: Text assertion failed for element '%s'\nExpected: '%s'\nActual: '%s'",
+                        lineNumber, locator.getValue(), expectedText, actualText
                 ));
             }
 

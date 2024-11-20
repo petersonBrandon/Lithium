@@ -30,16 +30,16 @@ public class AssertionsParser {
         if(tokens.get(2).startsWith("\"") && tokens.get(2).endsWith("\"")) {
             text = tokens.get(2).substring(1, tokens.get(2).length() - 1);
         }
-        return new AssertTextCommand(LocatorParser.parse(tokens.get(0), tokens.get(1), lineNumber), text);
+        return new AssertTextCommand(LocatorParser.parse(tokens.get(0), tokens.get(1), lineNumber), text, lineNumber);
     }
 
     public static AssertVisibleCommand parseAssertVisibleCommand(String args, int lineNumber) throws TestSyntaxException {
         List<String> tokens = CommandArgParser.parseArgs(args, ArgPattern.LOCATOR_ONLY, lineNumber);
-        return new AssertVisibleCommand(LocatorParser.parse(tokens.get(0), tokens.get(1), lineNumber));
+        return new AssertVisibleCommand(LocatorParser.parse(tokens.get(0), tokens.get(1), lineNumber), lineNumber);
     }
 
     public static AssertURLCommand parseAssertURLCommand(String args, int lineNumber) throws TestSyntaxException {
         List<String> tokens = CommandArgParser.parseArgs(args, ArgPattern.TEXT_ONLY, lineNumber);
-        return new AssertURLCommand(tokens.getFirst());
+        return new AssertURLCommand(tokens.getFirst(), lineNumber);
     }
 }

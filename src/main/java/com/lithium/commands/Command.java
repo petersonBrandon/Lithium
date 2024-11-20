@@ -20,6 +20,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  */
 public interface Command {
 
+
     /**
      * Executes the command using the provided WebDriver and WebDriverWait instances.
      *

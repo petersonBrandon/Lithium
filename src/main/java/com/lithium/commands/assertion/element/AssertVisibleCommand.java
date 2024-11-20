@@ -29,14 +29,16 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 public class AssertVisibleCommand implements Command {
     private static final LithiumLogger log = LithiumLogger.getInstance();
     private Locator locator;
+    private final int lineNumber;
 
     /**
      * Constructs an AssertVisibleCommand instance with the specified locator.
      *
      * @param locator the Locator object representing the element to check visibility
      */
-    public AssertVisibleCommand(Locator locator) {
+    public AssertVisibleCommand(Locator locator, int lineNumber) {
         this.locator = locator;
+        this.lineNumber = lineNumber;
     }
 
     /**
@@ -57,19 +59,22 @@ public class AssertVisibleCommand implements Command {
             log.info(String.format("Asserted element visible with '%s %s'", locator.getType(), locator.getValue()));
         } catch (NoSuchElementException e) {
             throw new AssertionFailedException(String.format(
-                    "Element not found: '%s %s'",
+                    "Line %s: Element not found: '%s %s'",
+                    lineNumber,
                     locator.getType(),
                     locator.getValue()
             ));
         } catch (TimeoutException e) {
             throw new AssertionFailedException(String.format(
-                    "Element not visible within timeout: '%s %s'",
+                    "Line %s: Element not visible within timeout: '%s %s'",
+                    lineNumber,
                     locator.getType(),
                     locator.getValue()
             ));
         } catch (Exception e) {
             throw new AssertionFailedException(String.format(
-                    "Unable to assert element visibility: '%s %s'",
+                    "Line %s: Unable to assert element visibility: '%s %s'",
+                    lineNumber,
                     locator.getType(),
                     locator.getValue()
             ));
