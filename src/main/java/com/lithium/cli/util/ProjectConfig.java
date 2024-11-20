@@ -20,14 +20,14 @@ public class ProjectConfig {
     private boolean headless = false;
     private boolean maximizeWindow = true;
     private final ParallelExecutionConfig parallelExecution = new ParallelExecutionConfig();
-    private String[] reportFormat = {"html", "json"};
+    private String[] reportFormat = {"pdf", "html", "json"};
     private String reportDirectory = "reports";
     private boolean enableScreenshotsOnFailure = true;
     private String logLevel = "info";
     private String logDirectory = "logs";
     private boolean saveExecutionLogs = true;
     private final Map<String, EnvironmentConfig> environments = new HashMap<>();
-    private String activeEnvironment = "dev";
+    private String activeEnvironment = "";
 
     public ProjectConfig() {
         this.projectName = "Lithium Project";
@@ -41,9 +41,9 @@ public class ProjectConfig {
     }
 
     private void initializeDefaultEnvironments() {
-        environments.put("dev", new EnvironmentConfig("https://dev.example.com", "chrome"));
-        environments.put("staging", new EnvironmentConfig("https://staging.example.com", "firefox"));
-        environments.put("production", new EnvironmentConfig("https://example.com", "chrome"));
+        environments.put("dev", new EnvironmentConfig("", ""));
+        environments.put("staging", new EnvironmentConfig("", ""));
+        environments.put("production", new EnvironmentConfig("", ""));
     }
 
     // Getters

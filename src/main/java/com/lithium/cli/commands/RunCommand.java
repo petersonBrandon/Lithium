@@ -54,9 +54,14 @@ public class RunCommand extends BaseLithiumCommand {
         Map<String, String> cliArgs = argsParser.parseArgs(args);
         String fileName = args[1];
 
+        // Get environment-specific configuration
+        ProjectConfig.EnvironmentConfig envConfig = getEnvironmentConfig();
+
+        // Use environment values with fallbacks
         boolean headless = !argsParser.getBooleanOption(cliArgs, "headed", !config.isHeadless());
         boolean maximized = argsParser.getBooleanOption(cliArgs, "maximized", config.isMaximizeWindow());
-        String browser = argsParser.getStringOption(cliArgs, "browser", config.getBrowser());
+        String browser = argsParser.getStringOption(cliArgs, "browser",
+                getEnvironmentBrowser(envConfig));
         int timeout = argsParser.getIntOption(cliArgs, "timeout", config.getDefaultTimeout());
 
         TestRunner runner = null;
@@ -74,12 +79,39 @@ public class RunCommand extends BaseLithiumCommand {
         }
     }
 
+    private ProjectConfig.EnvironmentConfig getEnvironmentConfig() {
+        String activeEnv = config.getActiveEnvironment();
+        if (activeEnv != null && !activeEnv.isEmpty()) {
+            Map<String, ProjectConfig.EnvironmentConfig> environments = config.getEnvironments();
+            if (environments != null && environments.containsKey(activeEnv)) {
+                return environments.get(activeEnv);
+            }
+        }
+        return null;
+    }
+
+    private String getEnvironmentBrowser(ProjectConfig.EnvironmentConfig envConfig) {
+        if (envConfig != null && envConfig.getBrowser() != null && !envConfig.getBrowser().isEmpty()) {
+            return envConfig.getBrowser();
+        }
+        return config.getBrowser();
+    }
+
+    private String getEnvironmentBaseUrl(ProjectConfig.EnvironmentConfig envConfig) {
+        if (envConfig != null && envConfig.getBaseUrl() != null && !envConfig.getBaseUrl().isEmpty()) {
+            return envConfig.getBaseUrl();
+        }
+        return config.getBaseUrl();
+    }
+
     private void runTests(String testFilePath, String[] args, boolean headless,
                           boolean maximized, String browser, int timeout)
             throws IOException, TestSyntaxException {
         TestParser parser = new TestParser();
         Map<String, TestCase> testCases = parser.parseFile(testFilePath);
-        TestRunner runner = new TestRunner(headless, maximized, browser, timeout);
+
+        String baseUrl = getEnvironmentBaseUrl(getEnvironmentConfig());
+        TestRunner runner = new TestRunner(headless, maximized, browser, timeout, baseUrl);
 
         if (args.length > 2 && !args[2].startsWith("--")) {
             runSingleTest(args[2], testCases, runner);

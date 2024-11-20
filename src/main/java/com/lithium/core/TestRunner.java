@@ -10,6 +10,8 @@
 package com.lithium.core;
 
 import com.lithium.commands.Command;
+import com.lithium.exceptions.CommandException;
+import com.lithium.util.LithiumLogger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.WebDriver;
@@ -29,19 +31,25 @@ import java.time.Duration;
  * depending on the specified options.
  */
 public class TestRunner {
-    private static final Logger log = LogManager.getLogger(TestRunner.class);
+    private static final LithiumLogger log = LithiumLogger.getInstance();
 
     private final WebDriver driver;
     private final int timeout;
+    private final String baseUrl;
 
     /**
      * Constructs a TestRunner with specified options for headless and maximized browser settings.
      *
      * @param headless   If true, the WebDriver will run in headless mode (no UI display).
      * @param maximized  If true, the WebDriver will start in maximized window mode.
+     * @param browser    The browser to use for the test run.
+     * @param timeout    The timeout in seconds for various WebDriver operations.
+     * @param baseUrl    The base URL to initialize the browser with.
      */
-    public TestRunner(boolean headless, boolean maximized, String browser, int timeout) {
+    public TestRunner(boolean headless, boolean maximized, String browser, int timeout, String baseUrl) {
         this.timeout = timeout;
+        this.baseUrl = baseUrl;
+
         BrowserDriverManager browserManager = new BrowserDriverManager();
         this.driver = browserManager.createDriver(browser, headless, maximized);
 
@@ -49,6 +57,17 @@ public class TestRunner {
         this.driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(timeout));
         this.driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(timeout));
         this.driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(timeout));
+
+        // Navigate to the base URL if one is provided
+        if (baseUrl != null && !baseUrl.isEmpty()) {
+            log.info(String.format("Navigating to base URL: %s", baseUrl));
+            try {
+                driver.get(baseUrl);
+            } catch (Exception e) {
+                close();
+                throw new CommandException(String.format("Error fetching url %s", baseUrl));
+            }
+        }
     }
 
     /**
@@ -68,8 +87,11 @@ public class TestRunner {
             }
 
             close();
+        } catch (CommandException e) {
+            close();
+            throw e;
         } catch (Exception e) {
-            log.error("Test execution failed: {}", e.getMessage());
+            log.error(String.format("Test execution failed: %s", e.getMessage()));
             close();
             throw e;
         }
@@ -83,7 +105,7 @@ public class TestRunner {
             try {
                 driver.quit();
             } catch (Exception e) {
-                log.error("Error while closing WebDriver: {}", e.getMessage());
+                log.error(String.format("Error while closing WebDriver: %s", e.getMessage()));
             }
         }
     }
