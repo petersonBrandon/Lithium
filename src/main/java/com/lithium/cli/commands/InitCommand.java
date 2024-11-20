@@ -214,6 +214,7 @@ public class InitCommand extends BaseLithiumCommand {
 
             // Reporting and logging settings
             appendJsonProperty(json, "enableScreenshotsOnFailure", config.isEnableScreenshotsOnFailure(), true);
+            appendJsonProperty(json, "enableScreenRecord", config.isEnableScreenRecord(), false);
             appendJsonProperty(json, "logLevel", config.getLogLevel(), true);
             appendJsonProperty(json, "saveExecutionLogs", config.isSaveExecutionLogs(), true);
 
