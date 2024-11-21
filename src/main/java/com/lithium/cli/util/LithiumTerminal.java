@@ -18,6 +18,7 @@ import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class LithiumTerminal {
     private static final String LOGO = """
@@ -58,10 +59,28 @@ public class LithiumTerminal {
 
     private LithiumTerminal() {
         try {
+            // Check if running on Windows
+            if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                // Attempt to set UTF-8 encoding for Windows
+                try {
+                    // For CMD
+                    ProcessBuilder cmdPb = new ProcessBuilder("cmd", "/c", "chcp", "65001");
+                    cmdPb.inheritIO().start().waitFor();
+
+                    // For PowerShell
+                    ProcessBuilder psPb = new ProcessBuilder("powershell", "-Command",
+                            "$OutputEncoding = [console]::InputEncoding = [console]::OutputEncoding = New-Object System.Text.UTF8Encoding");
+                    psPb.inheritIO().start().waitFor();
+                } catch (Exception encodingSetupEx) {
+                    System.err.println("Warning: Could not set Windows console encoding: " + encodingSetupEx.getMessage());
+                }
+            }
+
             this.terminal = TerminalBuilder.builder()
                     .system(true)
                     .dumb(true)
                     .jansi(true)
+                    .encoding(StandardCharsets.UTF_8)
                     .build();
 
             this.lineReader = LineReaderBuilder.builder()
