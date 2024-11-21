@@ -44,7 +44,7 @@ public class InitCommand extends BaseLithiumCommand {
 
     @Override
     public String getUsage() {
-        return "lit init [project-name] [--quick]";
+        return "lithium init [project-name] [--quick]";
     }
 
     @Override

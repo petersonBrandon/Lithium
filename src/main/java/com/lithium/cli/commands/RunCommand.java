@@ -47,7 +47,7 @@ public class RunCommand extends BaseLithiumCommand {
 
     @Override
     public String getUsage() {
-        return "lit run <file-name> [test-name] [--headed=true|false] [--maximized=true|false] " +
+        return "lithium run <file-name> [test-name] [--headed=true|false] [--maximized=true|false] " +
                 "[--browser=<browser_name>] [--timeout=<seconds>] [--threads=<thread_count>]";
     }
 
