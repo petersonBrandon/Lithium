@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------------
  */
 
-package com.lithium.commands.interaction;
+package com.lithium.commands.interaction.basic;
 
 import com.lithium.commands.Command;
 import com.lithium.core.TestContext;

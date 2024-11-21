@@ -19,6 +19,7 @@ public enum ArgPattern {
     TEXT_ONLY(1),                   // "text"
     VARIABLE_AND_VALUE(2),          // <var> "value"
     OPTIONAL_TEXT(0, 1),       // "<value>" (optional)
+    LOCATOR_AND_TYPE_WITH_VALUE(4), // <type> "locator" <type> "<value>"
     NONE(0);                        // no extraneous args expected
 
     private final int minArgs;

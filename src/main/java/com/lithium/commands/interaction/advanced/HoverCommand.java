@@ -1,13 +1,13 @@
 /*
  * ----------------------------------------------------------------------------
  * Project: Lithium Automation Framework
- * File: ClickCommand.java
+ * File: HoverCommand.java
  * Author: Brandon Peterson
- * Date: 11/13/2024
+ * Date: 11/20/2024
  * ----------------------------------------------------------------------------
  */
 
-package com.lithium.commands.interaction;
+package com.lithium.commands.interaction.advanced;
 
 import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
@@ -15,41 +15,50 @@ import com.lithium.exceptions.CommandException;
 import com.lithium.locators.Locator;
 import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 /**
- * The ClickCommand class represents a command to click on a web element located by a specific locator.
- * This command waits until the element is clickable before performing the click action.
+ * The HoverCommand class represents a command to perform a hover (mouse over) action 
+ * on a web element located by a specific locator. This command waits until the element 
+ * is visible before performing the hover action.
  */
-public class ClickCommand implements Command {
+public class HoverCommand implements Command {
     private static final LithiumLogger log = LithiumLogger.getInstance();
     private Locator locator;
     private final int lineNumber;
 
     /**
-     * Constructs a ClickCommand with the specified Locator.
+     * Constructs a HoverCommand with the specified Locator.
      *
-     * @param locator The Locator used to find the element to be clicked.
+     * @param locator The Locator used to find the element to hover over.
+     * @param lineNumber The line number where this command appears in the test script.
      */
-    public ClickCommand(Locator locator, int lineNumber) {
+    public HoverCommand(Locator locator, int lineNumber) {
         this.locator = locator;
         this.lineNumber = lineNumber;
     }
 
     /**
-     * Executes the click action on the web element identified by the locator, waiting until the element is clickable.
+     * Executes the hover action on the web element identified by the locator,
+     * waiting until the element is visible.
      *
      * @param driver The WebDriver instance used to interact with the web page.
-     * @param wait   The WebDriverWait instance used to wait for the element to become clickable.
+     * @param wait The WebDriverWait instance used to wait for the element to become visible.
+     * @param context The TestContext instance containing test execution context.
      */
     @Override
     public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
         try {
             locator = new Locator(locator.getType(), context.resolveVariables(locator.getValue()));
-            WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator.toSeleniumBy()));
-            element.click();
-            log.info(String.format("Clicked element: %s", locator));
+            WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator.toSeleniumBy()));
+
+            Actions actions = new Actions(driver);
+            actions.moveToElement(element).perform();
+
+            log.info(String.format("Hovered over element: %s", locator));
         } catch (NoSuchElementException e) {
             throw new CommandException(String.format(
                     "Line %s: Element not found: '%s %s'",
@@ -64,23 +73,23 @@ public class ClickCommand implements Command {
                     locator.getType(),
                     locator.getValue()
             ));
-        } catch (ElementClickInterceptedException e) {
+        } catch (MoveTargetOutOfBoundsException e) {
             throw new CommandException(String.format(
-                    "Line %s: Element click intercepted for: '%s %s'",
+                    "Line %s: Element not in viewport or cannot be hovered: '%s %s'",
                     lineNumber,
                     locator.getType(),
                     locator.getValue()
             ));
         } catch (TimeoutException e) {
             throw new CommandException(String.format(
-                    "Line %s: Timeout waiting for clickable element: '%s %s'",
+                    "Line %s: Timeout waiting for visible element: '%s %s'",
                     lineNumber,
                     locator.getType(),
                     locator.getValue()
             ));
         } catch (Exception e) {
             throw new CommandException(String.format(
-                    "Line %s: Unable to click element: '%s %s'",
+                    "Line %s: Unable to hover over element: '%s %s'",
                     lineNumber,
                     locator.getType(),
                     locator.getValue()

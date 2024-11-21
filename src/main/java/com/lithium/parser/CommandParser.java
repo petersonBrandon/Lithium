@@ -62,6 +62,11 @@ public class CommandParser {
 
             case "click" -> InteractionParser.parseClickCommand(remainingArgs, lineNumber);
             case "type" -> InteractionParser.parseTypeCommand(remainingArgs, lineNumber);
+            case "clear" -> InteractionParser.parseClearCommand(remainingArgs, lineNumber);
+            case "doubleClick" -> InteractionParser.parseDoubleClickCommand(remainingArgs, lineNumber);
+            case "rightClick" -> InteractionParser.parseRightClickCommand(remainingArgs, lineNumber);
+            case "hover" -> InteractionParser.parseHoverCommand(remainingArgs, lineNumber);
+            case "select" -> InteractionParser.parseSelectCommand(remainingArgs, lineNumber);
 
             // Navigation
 
