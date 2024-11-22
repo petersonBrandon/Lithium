@@ -10,14 +10,12 @@
 package com.lithium.commands.interaction.basic;
 
 import com.lithium.commands.Command;
-import com.lithium.core.TestContext;
-import com.lithium.core.TestRunner;
+import com.lithium.core.ExecutionContext;
 import com.lithium.exceptions.CommandException;
 import com.lithium.locators.Locator;
 import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 /**
  * The ClickCommand class represents a command to click on a web element located by a specific locator.
@@ -43,7 +41,7 @@ public class ClickCommand implements Command {
      *
      */
     @Override
-    public void execute(TestRunner.ExecutionContext context) {
+    public void execute(ExecutionContext context) {
         try {
             WebElement element = context.getWait().until(ExpectedConditions.elementToBeClickable(locator.toSeleniumBy()));
             element.click();

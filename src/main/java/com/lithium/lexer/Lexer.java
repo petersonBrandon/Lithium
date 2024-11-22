@@ -275,10 +275,12 @@ public class Lexer {
 
     // Enhanced number handling with scientific notation
     private void number() {
+        boolean isDouble = false;
         while (isDigit(peek())) advance();
 
         // Look for decimal point
         if (peek() == '.' && isDigit(peekNext())) {
+            isDouble = true;
             advance(); // consume .
             while (isDigit(peek())) advance();
         }
@@ -293,9 +295,13 @@ public class Lexer {
             }
             while (isDigit(peek())) advance();
         }
-
-        addToken(TokenType.NUMBER,
-                Double.parseDouble(source.substring(start, current)));
+        if (isDouble) {
+            addToken(TokenType.NUMBER,
+                    Double.parseDouble(source.substring(start, current)));
+        } else {
+            addToken(TokenType.NUMBER,
+                    Integer.parseInt(source.substring(start, current)));
+        }
     }
 
     // Helper methods remain mostly the same, but with column tracking added

@@ -10,10 +10,10 @@ public abstract class Expr extends Node {
     }
 
     // Binary operations (e.g., a + b, a == b)
-    static class Binary extends Expr {
-        final Expr left;
-        final Token operator;
-        final Expr right;
+    public static class Binary extends Expr {
+        public final Expr left;
+        public final Token operator;
+        public final Expr right;
 
         Binary(Expr left, Token operator, Expr right) {
             super(operator.getLine(), operator.getColumn());
@@ -44,10 +44,10 @@ public abstract class Expr extends Node {
     }
 
     // Function calls
-    static class Call extends Expr {
-        final Expr callee;
+    public static class Call extends Expr {
+        public final Expr callee;
         final Token paren;
-        final List<Expr> arguments;
+        public final List<Expr> arguments;
 
         Call(Expr callee, Token paren, List<Expr> arguments) {
             super(paren.getLine(), paren.getColumn());
@@ -58,10 +58,10 @@ public abstract class Expr extends Node {
     }
 
     // Logical operations (AND, OR)
-    static class Logical extends Expr {
-        final Expr left;
-        final Token operator;
-        final Expr right;
+    public static class Logical extends Expr {
+        public final Expr left;
+        public final Token operator;
+        public final Expr right;
 
         Logical(Expr left, Token operator, Expr right) {
             super(operator.getLine(), operator.getColumn());
@@ -72,9 +72,9 @@ public abstract class Expr extends Node {
     }
 
     // Range expression for for-loops (e.g., 1..5)
-    static class Range extends Expr {
-        final Expr start;
-        final Expr end;
+    public static class Range extends Expr {
+        public final Expr start;
+        public final Expr end;
 
         Range(Expr start, Expr end) {
             super(start.line, start.column);
@@ -84,8 +84,8 @@ public abstract class Expr extends Node {
     }
 
     // Grouping expressions (e.g., parentheses)
-    static class Grouping extends Expr {
-        final Expr expression;
+    public static class Grouping extends Expr {
+        public final Expr expression;
 
         Grouping(Expr expression) {
             super(expression.line, expression.column);
@@ -94,8 +94,8 @@ public abstract class Expr extends Node {
     }
 
     // Get expressions (for accessing properties/members)
-    static class Get extends Expr {
-        final Expr object;
+    public static class Get extends Expr {
+        public final Expr object;
         final Token name;
 
         Get(Expr object, Token name) {
@@ -106,9 +106,9 @@ public abstract class Expr extends Node {
     }
 
     // Unary expressions (e.g., -x, !x)
-    static class Unary extends Expr {
-        final Token operator;
-        final Expr right;
+    public static class Unary extends Expr {
+        public final Token operator;
+        public final Expr right;
 
         Unary(Token operator, Expr right) {
             super(operator.getLine(), operator.getColumn());
@@ -117,10 +117,10 @@ public abstract class Expr extends Node {
         }
     }
 
-    static class Assign extends Expr {
-        final Token name;
-        final Token operator;  // Now includes +=, -=, *=, /=
-        final Expr value;
+    public static class Assign extends Expr {
+        public final Token name;
+        public final Token operator;  // Now includes +=, -=, *=, /=
+        public final Expr value;
 
         Assign(Token name, Token operator, Expr value) {
             super(name.getLine(), name.getColumn());
@@ -130,9 +130,9 @@ public abstract class Expr extends Node {
         }
     }
 
-    static class Postfix extends Expr {
-        final Expr operand;
-        final Token operator;
+    public static class Postfix extends Expr {
+        public final Expr operand;
+        public final Token operator;
 
         Postfix(Expr operand, Token operator) {
             super(operator.getLine(), operator.getColumn());

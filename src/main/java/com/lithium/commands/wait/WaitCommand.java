@@ -9,7 +9,6 @@
 
 package com.lithium.commands.wait;
 
-import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
 import com.lithium.exceptions.CommandException;
 import com.lithium.locators.Locator;

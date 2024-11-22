@@ -10,13 +10,10 @@
 package com.lithium.commands.navigation;
 
 import com.lithium.commands.Command;
-import com.lithium.core.TestContext;
-import com.lithium.core.TestRunner;
+import com.lithium.core.ExecutionContext;
 import com.lithium.exceptions.CommandException;
 import com.lithium.util.logger.LithiumLogger;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class RefreshCommand implements Command {
     private static final LithiumLogger log = LithiumLogger.getInstance();
@@ -27,7 +24,7 @@ public class RefreshCommand implements Command {
     }
 
     @Override
-    public void execute(TestRunner.ExecutionContext context) {
+    public void execute(ExecutionContext context) {
         try {
             context.getDriver().navigate().refresh();
             log.info("Refreshed page");

@@ -9,7 +9,7 @@
 
 package com.lithium.commands;
 
-import com.lithium.core.TestRunner;
+import com.lithium.core.ExecutionContext;
 
 /**
  * The Command interface represents an action or operation to be performed in a Lithium test.
@@ -17,5 +17,5 @@ import com.lithium.core.TestRunner;
  * can be executed using a WebDriver instance.
  */
 public interface Command {
-    void execute(TestRunner.ExecutionContext context);
+    void execute(ExecutionContext context);
 }

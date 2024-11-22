@@ -10,14 +10,11 @@
 package com.lithium.commands.navigation;
 
 import com.lithium.commands.Command;
-import com.lithium.core.TestContext;
-import com.lithium.core.TestRunner;
+import com.lithium.core.ExecutionContext;
 import com.lithium.exceptions.CommandException;
 import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -47,7 +44,7 @@ public class OpenCommand implements Command {
      *
      */
     @Override
-    public void execute(TestRunner.ExecutionContext context) {
+    public void execute(ExecutionContext context) {
         if (url == null || url.trim().isEmpty()) {
             throw new IllegalArgumentException(String.format("Line %s: URL cannot be null or empty", lineNumber));
         }

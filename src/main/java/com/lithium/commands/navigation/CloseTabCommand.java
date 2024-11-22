@@ -10,14 +10,11 @@
 package com.lithium.commands.navigation;
 
 import com.lithium.commands.Command;
-import com.lithium.core.TestContext;
-import com.lithium.core.TestRunner;
+import com.lithium.core.ExecutionContext;
 import com.lithium.exceptions.CommandException;
 import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.NoSuchWindowException;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -55,7 +52,7 @@ public class CloseTabCommand implements Command {
      * @param context The TestContext instance for variable resolution.
      */
     @Override
-    public void execute(TestRunner.ExecutionContext context) {
+    public void execute(ExecutionContext context) {
         try {
             Set<String> windowHandles = context.getDriver().getWindowHandles();
 

@@ -12,21 +12,17 @@ package com.lithium.core;
 import com.lithium.parser.Stmt;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-/**
- * The TestCase class represents a single test case in the Lithium framework.
- * It holds the name of the test, a list of commands to be executed during the test,
- * and manages the test context for variable storage and resolution.
- */
 public class TestCase {
     private final String name;
     private final String filePath;
-    private final List<Stmt.Command> commands;
+    private final List<Stmt> statements;
 
-    public TestCase(String name, String filePath, List<Stmt.Command> commands) {
+    public TestCase(String name, String filePath, List<Stmt> statements) {
         this.name = name;
         this.filePath = filePath;
-        this.commands = commands;
+        this.statements = statements;
     }
 
     public String getName() {
@@ -37,7 +33,48 @@ public class TestCase {
         return filePath;
     }
 
-    public List<Stmt.Command> getCommands() {
-        return commands;
+    public List<Stmt> getStatements() {
+        return statements;
+    }
+
+    /**
+     * Gets all global import statements for this test case
+     */
+    public List<Stmt.Import> getImports() {
+        return statements.stream()
+                .filter(stmt -> stmt instanceof Stmt.Import)
+                .map(stmt -> (Stmt.Import) stmt)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Gets all global function declarations for this test case
+     */
+    public List<Stmt.Function> getFunctions() {
+        return statements.stream()
+                .filter(stmt -> stmt instanceof Stmt.Function)
+                .map(stmt -> (Stmt.Function) stmt)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Gets all global variable declarations for this test case
+     */
+    public List<Stmt.Var> getGlobalVariables() {
+        return statements.stream()
+                .filter(stmt -> stmt instanceof Stmt.Var)
+                .map(stmt -> (Stmt.Var) stmt)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Gets the actual test statements (excluding global declarations)
+     */
+    public List<Stmt> getTestStatements() {
+        return statements.stream()
+                .filter(stmt -> !(stmt instanceof Stmt.Import ||
+                        stmt instanceof Stmt.Function ||
+                        stmt instanceof Stmt.Var))
+                .collect(Collectors.toList());
     }
 }

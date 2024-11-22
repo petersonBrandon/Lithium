@@ -10,8 +10,7 @@
 package com.lithium.commands.interaction.advanced;
 
 import com.lithium.commands.Command;
-import com.lithium.core.TestContext;
-import com.lithium.core.TestRunner;
+import com.lithium.core.ExecutionContext;
 import com.lithium.exceptions.CommandException;
 import com.lithium.locators.Locator;
 import com.lithium.util.logger.LithiumLogger;
@@ -19,7 +18,6 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 /**
  * The HoverCommand class represents a command to perform a hover (mouse over) action 
@@ -49,7 +47,7 @@ public class HoverCommand implements Command {
      * @param context The TestContext instance containing test execution context.
      */
     @Override
-    public void execute(TestRunner.ExecutionContext context) {
+    public void execute(ExecutionContext context) {
         try {
             WebElement element = context.getWait().until(ExpectedConditions.elementToBeClickable(locator.toSeleniumBy()));
 

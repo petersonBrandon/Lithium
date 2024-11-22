@@ -10,13 +10,10 @@
 package com.lithium.commands.assertion;
 
 import com.lithium.commands.Command;
-import com.lithium.core.TestContext;
-import com.lithium.core.TestRunner;
+import com.lithium.core.ExecutionContext;
 import com.lithium.exceptions.AssertionFailedException;
 import com.lithium.exceptions.CommandException;
 import com.lithium.util.logger.LithiumLogger;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 /**
  * The AssertURLCommand handles the verification of the current URL
@@ -43,7 +40,7 @@ public class AssertURLCommand implements Command {
      * @param context The test context for resolving possible variables in the expected URL.
      */
     @Override
-    public void execute(TestRunner.ExecutionContext context) {
+    public void execute(ExecutionContext context) {
         try {
             String currentUrl = context.getDriver().getCurrentUrl();
 

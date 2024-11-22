@@ -10,8 +10,7 @@
 package com.lithium.commands.interaction.basic;
 
 import com.lithium.commands.Command;
-import com.lithium.core.TestContext;
-import com.lithium.core.TestRunner;
+import com.lithium.core.ExecutionContext;
 import com.lithium.exceptions.CommandException;
 import com.lithium.locators.Locator;
 import com.lithium.util.logger.LithiumLogger;
@@ -47,7 +46,7 @@ public class TypeCommand implements Command {
      *
      */
     @Override
-    public void execute(TestRunner.ExecutionContext context) {
+    public void execute(ExecutionContext context) {
         try {
             // Wait for element and verify it's interactive
             WebElement element = waitForInteractiveElement(context.getWait());

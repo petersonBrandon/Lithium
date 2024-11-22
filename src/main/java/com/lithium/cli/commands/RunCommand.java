@@ -12,13 +12,12 @@ package com.lithium.cli.commands;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lithium.cli.BaseLithiumCommand;
 import com.lithium.cli.util.*;
+import com.lithium.core.LithiumTestHandler;
 import com.lithium.core.TestCase;
-import com.lithium.core.TestRunner;
 import com.lithium.exceptions.LexerError;
 import com.lithium.exceptions.TestSyntaxException;
 import com.lithium.lexer.Lexer;
 import com.lithium.lexer.Token;
-import com.lithium.parser.Expr;
 import com.lithium.parser.Parser;
 import com.lithium.parser.Stmt;
 import com.lithium.util.logger.LithiumLogger;
@@ -90,9 +89,8 @@ public class RunCommand extends BaseLithiumCommand {
         try {
             List<String> testFilePaths = fileResolver.resolveTestFilePaths(fileName);
             String baseUrl = getEnvironmentBaseUrl(getEnvironmentConfig());
-            TestRunnerConfig runnerConfig = new TestRunnerConfig(headless, maximized, browser, timeout, baseUrl);
 
-            runTests(testFilePaths, args, runnerConfig);
+            runTests(testFilePaths, args);
         } catch (Exception e) {
             log.error("Error: " + e.getMessage());
             System.exit(1);
@@ -124,7 +122,7 @@ public class RunCommand extends BaseLithiumCommand {
         return config.getBaseUrl();
     }
 
-    private void runTests(List<String> testFilePaths, String[] args, TestRunnerConfig runnerConfig)
+    private void runTests(List<String> testFilePaths, String[] args)
             throws IOException, TestSyntaxException {
         Map<String, TestCase> testCases = new HashMap<>();
 
@@ -133,9 +131,9 @@ public class RunCommand extends BaseLithiumCommand {
         }
 
         if (args.length > 2 && !args[2].startsWith("--")) {
-            runSingleTest(args[2], testCases, runnerConfig);
+            runSingleTest(args[2], testCases);
         } else {
-            runAllTests(testCases, runnerConfig);
+            runAllTests(testCases);
         }
 
         testLogger.printSummary();
@@ -156,10 +154,19 @@ public class RunCommand extends BaseLithiumCommand {
             List<Stmt> statements = parser.parse();
 
             // Convert parsed statements to TestCase objects
-            TestCaseBuilder builder = new TestCaseBuilder(filePath);
+            TestCaseBuilder builder = new TestCaseBuilder(filePath, statements);
+
+            // First pass: collect all global statements (imports, functions, vars)
+            List<Stmt> globalStatements = statements.stream()
+                    .filter(stmt -> stmt instanceof Stmt.Import ||
+                            stmt instanceof Stmt.Function ||
+                            stmt instanceof Stmt.Var)
+                    .collect(Collectors.toList());
+
+            // Second pass: build test cases with global context
             for (Stmt stmt : statements) {
                 if (stmt instanceof Stmt.Test testStmt) {
-                    TestCase testCase = builder.buildTestCase(testStmt);
+                    TestCase testCase = builder.buildTestCase(testStmt, globalStatements);
                     testCases.put(testCase.getName(), testCase);
                 }
             }
@@ -173,20 +180,20 @@ public class RunCommand extends BaseLithiumCommand {
         return testCases;
     }
 
-    private record TestCaseBuilder(String filePath) {
-        public TestCase buildTestCase(Stmt.Test test) {
-            // Get test name from the description string literal, removing quotes
+    private record TestCaseBuilder(String filePath, List<Stmt> allStatements) {
+        public TestCase buildTestCase(Stmt.Test test, List<Stmt> globalStatements) {
             String testName = test.description.getLiteral().toString();
-            List<Stmt.Command> commands = new ArrayList<>();
 
-            // Extract Command statements from the test body
-            for (Stmt stmt : test.body) {
-                if (stmt instanceof Stmt.Command cmd) {
-                    commands.add(cmd);
-                }
-            }
+            // Create a new list combining global statements and test body
+            List<Stmt> combinedStatements = new ArrayList<>();
 
-            return new TestCase(testName, filePath, commands);
+            // Add all global statements first
+            combinedStatements.addAll(globalStatements);
+
+            // Add test body statements
+            combinedStatements.addAll(test.body);
+
+            return new TestCase(testName, filePath, combinedStatements);
         }
     }
 
@@ -202,16 +209,16 @@ public class RunCommand extends BaseLithiumCommand {
         }
     }
 
-    private void runSingleTest(String testName, Map<String, TestCase> testCases, TestRunnerConfig runnerConfig) {
+    private void runSingleTest(String testName, Map<String, TestCase> testCases) {
         TestCase test = testCases.get(testName);
         if (test == null) {
             log.error("Test '" + testName + "' not found!");
             throw new IllegalArgumentException("Test '" + testName + "' not found!");
         }
-        runAndLogTest(test, runnerConfig);
+        runAndLogTest(test);
     }
 
-    private void runAllTests(Map<String, TestCase> testCases, TestRunnerConfig runnerConfig) {
+    private void runAllTests(Map<String, TestCase> testCases) {
         ProjectConfig.ParallelExecutionConfig parallelConfig = config.getParallelExecution();
 
         if (parallelConfig.isEnabled()) {
@@ -220,7 +227,7 @@ public class RunCommand extends BaseLithiumCommand {
 
             List<CompletableFuture<Void>> futures = testCases.values().stream()
                     .map(test -> CompletableFuture.runAsync(() -> {
-                        runAndLogTest(test, runnerConfig);
+                        runAndLogTest(test);
                     }, executorService))
                     .collect(Collectors.toList());
 
@@ -230,11 +237,11 @@ public class RunCommand extends BaseLithiumCommand {
             executorService.shutdown();
         } else {
             // Existing sequential execution
-            testCases.values().forEach(test -> runAndLogTest(test, runnerConfig));
+            testCases.values().forEach(test -> runAndLogTest(test));
         }
     }
 
-    private void runAndLogTest(TestCase test, TestRunnerConfig runnerConfig) {
+    private void runAndLogTest(TestCase test) {
         int maxRetries = config.getTestRetryCount();
         int currentAttempt = 0;
         LocalDateTime startTime = LocalDateTime.now();
@@ -248,7 +255,7 @@ public class RunCommand extends BaseLithiumCommand {
         log.title("Running test: " + test.getName());
 
         while (currentAttempt <= maxRetries) {
-            TestRunner runner = null;
+            LithiumTestHandler fileHandler = null;
             try {
                 // Log retry attempt
                 if (currentAttempt > 0) {
@@ -256,8 +263,10 @@ public class RunCommand extends BaseLithiumCommand {
                             currentAttempt, test.getName()));
                 }
 
-                runner = runnerConfig.createRunner();
-                runner.runTest(test);
+                // Create and execute file handler
+                fileHandler = new LithiumTestHandler(test.getStatements(), config);
+                fileHandler.execute();
+
                 result = ResultType.PASS;
                 errorMessage = null;
 
@@ -289,8 +298,8 @@ public class RunCommand extends BaseLithiumCommand {
                     }
                 }
             } finally {
-                if (runner != null) {
-                    runner.close();
+                if (fileHandler != null) {
+                    fileHandler.close();
                 }
             }
         }
@@ -334,13 +343,6 @@ public class RunCommand extends BaseLithiumCommand {
                         config.getTestDirectory() + "' does not exist. Falling back to current directory.");
                 config.setTestDirectory(null);
             }
-        }
-    }
-
-    private record TestRunnerConfig(boolean headless, boolean maximized, String browser, int timeout, String baseUrl) {
-
-        TestRunner createRunner() {
-            return new TestRunner(headless, maximized, browser, timeout, baseUrl, config);
         }
     }
 }

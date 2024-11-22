@@ -10,16 +10,13 @@
 package com.lithium.commands.assertion.text;
 
 import com.lithium.commands.Command;
-import com.lithium.core.TestContext;
-import com.lithium.core.TestRunner;
+import com.lithium.core.ExecutionContext;
 import com.lithium.exceptions.AssertionFailedException;
 import com.lithium.locators.Locator;
 import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 /**
  * The AssertTextCommand class implements the Command interface and provides
@@ -55,7 +52,7 @@ public class AssertTextCommand implements Command {
      *                          exception occurs during execution
      */
     @Override
-    public void execute(TestRunner.ExecutionContext context) {
+    public void execute(ExecutionContext context) {
         try {
             // Locate the web element and assert its text
             WebElement element = context.getWait().until(

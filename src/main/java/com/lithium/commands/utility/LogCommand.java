@@ -1,15 +1,10 @@
 package com.lithium.commands.utility;
 
 import com.lithium.commands.Command;
-import com.lithium.core.TestContext;
-import com.lithium.core.TestRunner;
+import com.lithium.core.ExecutionContext;
 import com.lithium.exceptions.CommandException;
 import com.lithium.util.logger.LithiumLogger;
 import com.lithium.util.logger.LogLevel;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
-
-import java.util.Map;
 
 /**
  * The LogCommand class is used to log messages at a specified log level,
@@ -48,7 +43,7 @@ public class LogCommand implements Command {
      *
      */
     @Override
-    public void execute(TestRunner.ExecutionContext context) {
+    public void execute(ExecutionContext context) {
         try {
             log.log(logLevel, message);
         } catch (Exception e) {

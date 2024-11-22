@@ -10,16 +10,13 @@
 package com.lithium.commands.assertion.element;
 
 import com.lithium.commands.Command;
-import com.lithium.core.TestContext;
-import com.lithium.core.TestRunner;
+import com.lithium.core.ExecutionContext;
 import com.lithium.exceptions.AssertionFailedException;
 import com.lithium.locators.Locator;
 import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 /**
  * The AssertVisibleCommand class implements the Command interface and provides
@@ -50,7 +47,7 @@ public class AssertVisibleCommand implements Command {
      * @throws AssertionFailedException if the element is not visible or an error occurs
      */
     @Override
-    public void execute(TestRunner.ExecutionContext context) {
+    public void execute(ExecutionContext context) {
         try {
             context.getWait().until(ExpectedConditions.visibilityOfElementLocated(locator.toSeleniumBy()));
             log.info(String.format("Asserted element visible with '%s %s'", locator.getType(), locator.getValue()));

@@ -10,14 +10,11 @@
 package com.lithium.commands.navigation;
 
 import com.lithium.commands.Command;
-import com.lithium.core.TestContext;
-import com.lithium.core.TestRunner;
+import com.lithium.core.ExecutionContext;
 import com.lithium.exceptions.CommandException;
 import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.NoSuchWindowException;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -48,7 +45,7 @@ public class SwitchToWindowCommand implements Command {
      * @param context The TestContext instance for variable resolution.
      */
     @Override
-    public void execute(TestRunner.ExecutionContext context) {
+    public void execute(ExecutionContext context) {
         try {
             if (windowIdentifier == null || windowIdentifier.trim().isEmpty()) {
                 throw new IllegalArgumentException(String.format("Line %s: Window identifier cannot be null or empty", lineNumber));

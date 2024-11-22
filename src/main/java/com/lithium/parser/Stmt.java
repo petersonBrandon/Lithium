@@ -12,9 +12,9 @@ public abstract class Stmt extends Node {
     }
 
     // Variable declarations
-    static class Var extends Stmt {
-        final Token name;
-        final Expr initializer;
+    public static class Var extends Stmt {
+        public final Token name;
+        public final Expr initializer;
 
         Var(Token name, Expr initializer) {
             super(name.getLine(), name.getColumn());
@@ -26,7 +26,7 @@ public abstract class Stmt extends Node {
     // Function declarations
     public static class Function extends Stmt {
         public final Token name;
-        final List<Token> params;
+        public final List<Token> params;
         public final List<Stmt> body;
 
         Function(Token name, List<Token> params, List<Stmt> body) {
@@ -38,10 +38,10 @@ public abstract class Stmt extends Node {
     }
 
     // If statements
-    static class If extends Stmt {
-        final Expr condition;
-        final List<Stmt> thenBranch;
-        final List<Stmt> elseBranch;
+    public static class If extends Stmt {
+        public final Expr condition;
+        public final List<Stmt> thenBranch;
+        public final List<Stmt> elseBranch;
 
         If(Expr condition, List<Stmt> thenBranch, List<Stmt> elseBranch) {
             super(condition.line, condition.column);
@@ -52,9 +52,9 @@ public abstract class Stmt extends Node {
     }
 
     // While loops
-    static class While extends Stmt {
-        final Expr condition;
-        final List<Stmt> body;
+    public static class While extends Stmt {
+        public final Expr condition;
+        public final List<Stmt> body;
 
         While(Expr condition, List<Stmt> body) {
             super(condition.line, condition.column);
@@ -64,10 +64,10 @@ public abstract class Stmt extends Node {
     }
 
     // For loops
-    static class For extends Stmt {
-        final Token variable;
-        final Expr range;
-        final List<Stmt> body;
+    public static class For extends Stmt {
+        public final Token variable;
+        public final Expr range;
+        public final List<Stmt> body;
 
         For(Token variable, Expr range, List<Stmt> body) {
             super(variable.getLine(), variable.getColumn());
@@ -78,9 +78,9 @@ public abstract class Stmt extends Node {
     }
 
     // Import statement
-    static class Import extends Stmt {
-        final Token path;
-        final Token alias;
+    public static class Import extends Stmt {
+        public final Token path;
+        public final Token alias;
 
         Import(Token path, Token alias) {
             super(path.getLine(), path.getColumn());
@@ -90,9 +90,9 @@ public abstract class Stmt extends Node {
     }
 
     // Export statement
-    static class Export extends Stmt {
-        final Token name;
-        final boolean exportAll;
+    public static class Export extends Stmt {
+        public final Token name;
+        public final boolean exportAll;
 
         Export(Token name, boolean exportAll) {
             super(name != null ? name.getLine() : 0,
@@ -133,8 +133,8 @@ public abstract class Stmt extends Node {
     }
 
     // Block statements (groups of statements in curly braces)
-    static class Block extends Stmt {
-        final List<Stmt> statements;
+    public static class Block extends Stmt {
+        public final List<Stmt> statements;
 
         Block(List<Stmt> statements) {
             super(statements.isEmpty() ? 0 : statements.get(0).line,
@@ -144,8 +144,8 @@ public abstract class Stmt extends Node {
     }
 
     // Expression statements (expressions used as statements)
-    static class Expression extends Stmt {
-        final Expr expression;
+    public static class Expression extends Stmt {
+        public final Expr expression;
 
         Expression(Expr expression) {
             super(expression.line, expression.column);
@@ -153,9 +153,9 @@ public abstract class Stmt extends Node {
         }
     }
 
-    static class Return extends Stmt {
+    public static class Return extends Stmt {
         final Token keyword;
-        final Expr value;
+        public final Expr value;
 
         Return(Token keyword, Expr value) {
             super(keyword.getLine(), keyword.getColumn());
