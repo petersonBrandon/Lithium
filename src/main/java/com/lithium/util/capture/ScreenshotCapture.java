@@ -31,7 +31,6 @@ public class ScreenshotCapture {
     public static String captureScreenshot(WebDriver driver, String testName, ProjectConfig config) {
         // Check if screenshots are enabled in configuration
         if (config == null || !config.isEnableScreenshotsOnFailure()) {
-            log.info("Screenshots on failure are disabled in configuration.");
             return null;
         }
 

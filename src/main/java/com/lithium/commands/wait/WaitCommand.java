@@ -26,7 +26,7 @@ import java.time.Duration;
  * The WaitCommand class represents a command to wait for the presence of a web element located by a given locator.
  * This command pauses the execution until the specified element is found in the DOM.
  */
-public class WaitCommand implements Command {
+public class WaitCommand {
     private static final LithiumLogger log = LithiumLogger.getInstance();
     private static final long MAX_TIMEOUT = 300;
     private Locator locator;
@@ -58,7 +58,7 @@ public class WaitCommand implements Command {
      * @param driver The WebDriver instance used to interact with the web page.
      * @param wait   The WebDriverWait instance used to wait for the element to be present in the DOM.
      */
-    @Override
+
     public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
         try {
             // Resolve variables

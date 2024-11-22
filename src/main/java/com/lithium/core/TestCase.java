@@ -9,8 +9,8 @@
 
 package com.lithium.core;
 
-import com.lithium.commands.Command;
-import java.util.ArrayList;
+import com.lithium.parser.Stmt;
+
 import java.util.List;
 
 /**
@@ -20,61 +20,24 @@ import java.util.List;
  */
 public class TestCase {
     private final String name;
-    private final List<Command> commands;
-    private final TestContext context;
+    private final String filePath;
+    private final List<Stmt.Command> commands;
 
-    /**
-     * Constructs a TestCase with the specified name.
-     *
-     * @param name The name of the test case.
-     */
-    public TestCase(String name) {
+    public TestCase(String name, String filePath, List<Stmt.Command> commands) {
         this.name = name;
-        this.commands = new ArrayList<>();
-        this.context = new TestContext();
+        this.filePath = filePath;
+        this.commands = commands;
     }
 
-    /**
-     * Adds a command to the list of commands for this test case.
-     *
-     * @param command The Command to be added to the test case.
-     */
-    public void addCommand(Command command) {
-        commands.add(command);
-    }
-
-    /**
-     * Gets the list of commands associated with this test case.
-     *
-     * @return A list of Command objects to be executed during the test case.
-     */
-    public List<Command> getCommands() {
-        return commands;
-    }
-
-    /**
-     * Gets the name of the test case.
-     *
-     * @return The name of the test case.
-     */
     public String getName() {
         return name;
     }
 
-    /**
-     * Gets the test context associated with this test case.
-     *
-     * @return The TestContext instance for this test case.
-     */
-    public TestContext getContext() {
-        return context;
+    public String getFilePath() {
+        return filePath;
     }
 
-    /**
-     * Clears all variables in the test context.
-     * This can be useful when needing to reset the test state.
-     */
-    public void clearContext() {
-        context.clear();
+    public List<Stmt.Command> getCommands() {
+        return commands;
     }
 }

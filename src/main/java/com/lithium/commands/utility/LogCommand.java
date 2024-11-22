@@ -2,6 +2,7 @@ package com.lithium.commands.utility;
 
 import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
+import com.lithium.core.TestRunner;
 import com.lithium.exceptions.CommandException;
 import com.lithium.util.logger.LithiumLogger;
 import com.lithium.util.logger.LogLevel;
@@ -45,13 +46,11 @@ public class LogCommand implements Command {
      * Executes the log command by logging the message at the specified log level.
      * Any provided context data is added to the MDC before logging, and cleaned up afterward.
      *
-     * @param driver The Selenium WebDriver instance (not used in this command).
-     * @param wait The WebDriverWait instance (not used in this command).
      */
     @Override
-    public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
+    public void execute(TestRunner.ExecutionContext context) {
         try {
-            log.log(logLevel, context.resolveVariables(message));
+            log.log(logLevel, message);
         } catch (Exception e) {
             throw new CommandException(String.format(
                     "Failed to execute log command. Message: '%s', LogLevel: '%s'",

@@ -11,6 +11,7 @@ package com.lithium.commands.navigation;
 
 import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
+import com.lithium.core.TestRunner;
 import com.lithium.exceptions.CommandException;
 import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.TimeoutException;
@@ -44,30 +45,26 @@ public class OpenCommand implements Command {
     /**
      * Executes the navigation command, instructing the WebDriver to open the specified URL.
      *
-     * @param driver The WebDriver instance used to open the URL.
-     * @param wait   The WebDriverWait instance, not used in this command but provided for interface consistency.
      */
     @Override
-    public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
-        String resolvedUrl = context.resolveVariables(url);
-
-        if (resolvedUrl == null || resolvedUrl.trim().isEmpty()) {
+    public void execute(TestRunner.ExecutionContext context) {
+        if (url == null || url.trim().isEmpty()) {
             throw new IllegalArgumentException(String.format("Line %s: URL cannot be null or empty", lineNumber));
         }
 
         try {
             // Validate URL format
-            validateUrl(resolvedUrl);
+            validateUrl(url);
 
-            driver.get(resolvedUrl);
-            log.info(String.format("Opened URL: %s", resolvedUrl));
+            context.getDriver().get(url);
+            log.info(String.format("Opened URL: %s", url));
         } catch (TimeoutException e) {
-            String errorMsg = String.format("Line %s: Timeout while loading URL: %s", lineNumber, resolvedUrl);
+            String errorMsg = String.format("Line %s: Timeout while loading URL: %s", lineNumber, url);
             throw new CommandException(errorMsg);
 
         } catch (WebDriverException e) {
             String errorMsg = String.format("Line %s: Failed to load URL: %s",
-                    lineNumber, resolvedUrl);
+                    lineNumber, url);
             throw new CommandException(errorMsg);
 
         } catch (IllegalArgumentException | CommandException e) {
@@ -75,7 +72,7 @@ public class OpenCommand implements Command {
 
         } catch (Exception e) {
             String errorMsg = String.format("Line %s: Unexpected error while opening URL: %s",
-                    lineNumber, resolvedUrl);
+                    lineNumber, url);
             throw new CommandException(errorMsg);
         }
     }

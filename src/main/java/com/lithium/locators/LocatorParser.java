@@ -31,15 +31,13 @@ public class LocatorParser {
         if (type == null || type.trim().isEmpty()) {
             throw new TestSyntaxException(
                     "Locator type cannot be empty. Valid types are: " +
-                            String.join(", ", getValidTypesList()),
-                    lineNumber
+                            String.join(", ", getValidTypesList())
             );
         }
 
         if (value == null || value.trim().isEmpty()) {
             throw new TestSyntaxException(
-                    "Locator value cannot be empty",
-                    lineNumber
+                    "Locator value cannot be empty"
             );
         }
 
@@ -49,8 +47,7 @@ public class LocatorParser {
         } catch (IllegalArgumentException e) {
             throw new TestSyntaxException(
                     "Invalid locator type '" + type + "'. Valid types are: " +
-                            String.join(", ", getValidTypesList()),
-                    lineNumber
+                            String.join(", ", getValidTypesList())
             );
         }
     }
@@ -70,8 +67,7 @@ public class LocatorParser {
         String[] parts = locatorString.trim().split("\\s+", 2);
         if (parts.length != 2) {
             throw new TestSyntaxException(
-                    "Invalid locator format. Expected: <type> \"<value>\". Example: css \"#myElement\"",
-                    lineNumber
+                    "Invalid locator format. Expected: <type> \"<value>\". Example: css \"#myElement\""
             );
         }
 
@@ -93,7 +89,7 @@ public class LocatorParser {
      */
     private static String[] getValidTypesList() {
         return java.util.Arrays.stream(LocatorType.values())
-                .map(type -> type.prefix)
+                .map(type -> type.value)
                 .toArray(String[]::new);
     }
 }

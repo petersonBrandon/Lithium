@@ -11,6 +11,7 @@ package com.lithium.commands.assertion.text;
 
 import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
+import com.lithium.core.TestRunner;
 import com.lithium.exceptions.AssertionFailedException;
 import com.lithium.locators.Locator;
 import com.lithium.util.logger.LithiumLogger;
@@ -49,20 +50,15 @@ public class AssertTextCommand implements Command {
      * Executes the text assertion command. Verifies that the text of the web
      * element identified by the locator matches the expected value.
      *
-     * @param driver  the WebDriver instance for browser interaction
-     * @param wait    the WebDriverWait instance for element wait conditions
      * @param context the TestContext for variable resolution in locators
      * @throws RuntimeException if an AssertionFailedException or other
      *                          exception occurs during execution
      */
     @Override
-    public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
+    public void execute(TestRunner.ExecutionContext context) {
         try {
-            // Resolve dynamic variables in the locator
-            locator = new Locator(locator.getType(), context.resolveVariables(locator.getValue()));
-
             // Locate the web element and assert its text
-            WebElement element = wait.until(
+            WebElement element = context.getWait().until(
                     ExpectedConditions.presenceOfElementLocated(locator.toSeleniumBy())
             );
 

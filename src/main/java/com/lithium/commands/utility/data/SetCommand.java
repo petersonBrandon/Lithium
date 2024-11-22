@@ -19,7 +19,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  * The SetCommand class represents a command to store a value in a variable during test execution.
  * This command allows for dynamic data storage that can be used by other commands.
  */
-public class SetCommand implements Command {
+public class SetCommand {
     private static final LithiumLogger log = LithiumLogger.getInstance();
     private final String variableName;
     private final String value;
@@ -42,7 +42,7 @@ public class SetCommand implements Command {
      * @param driver The WebDriver instance (unused in this command).
      * @param wait The WebDriverWait instance (unused in this command).
      */
-    @Override
+
     public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
         context.setVariable(variableName, value);
     }

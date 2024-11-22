@@ -11,6 +11,7 @@ package com.lithium.commands.interaction.basic;
 
 import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
+import com.lithium.core.TestRunner;
 import com.lithium.exceptions.CommandException;
 import com.lithium.locators.Locator;
 import com.lithium.util.logger.LithiumLogger;
@@ -44,18 +45,12 @@ public class TypeCommand implements Command {
      * Executes the type action on the web element identified by the locator, waiting until the element is clickable.
      * Clears any existing text in the element and then sends the specified text.
      *
-     * @param driver The WebDriver instance used to interact with the web page.
-     * @param wait   The WebDriverWait instance used to wait for the element to become clickable.
      */
     @Override
-    public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
+    public void execute(TestRunner.ExecutionContext context) {
         try {
-            // Resolve variables in locator and text
-            locator = new Locator(locator.getType(), context.resolveVariables(locator.getValue()));
-            String resolvedText = context.resolveVariables(text);
-
             // Wait for element and verify it's interactive
-            WebElement element = waitForInteractiveElement(wait);
+            WebElement element = waitForInteractiveElement(context.getWait());
 
             // Clear existing text
             try {
@@ -65,13 +60,13 @@ public class TypeCommand implements Command {
             }
 
             // Type the text
-            element.sendKeys(resolvedText);
+            element.sendKeys(text);
 
             // Verify the text was entered correctly
-            verifyTextEntered(element, resolvedText);
+            verifyTextEntered(element, text);
 
             log.info(String.format("Typed '%s' into element: %s %s",
-                    resolvedText, locator.getType(), locator.getValue()));
+                    text, locator.getType(), locator.getValue()));
 
         } catch (TimeoutException e) {
             String errorMsg = String.format(

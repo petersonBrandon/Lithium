@@ -11,6 +11,7 @@ package com.lithium.commands.navigation;
 
 import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
+import com.lithium.core.TestRunner;
 import com.lithium.exceptions.CommandException;
 import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.NoSuchWindowException;
@@ -44,20 +45,16 @@ public class SwitchToWindowCommand implements Command {
     /**
      * Executes the window switch command, instructing the WebDriver to switch to the specified window.
      *
-     * @param driver  The WebDriver instance used to switch windows.
-     * @param wait    The WebDriverWait instance for handling timing.
      * @param context The TestContext instance for variable resolution.
      */
     @Override
-    public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
-        windowIdentifier = context.resolveVariables(windowIdentifier);
-
+    public void execute(TestRunner.ExecutionContext context) {
         try {
             if (windowIdentifier == null || windowIdentifier.trim().isEmpty()) {
                 throw new IllegalArgumentException(String.format("Line %s: Window identifier cannot be null or empty", lineNumber));
             }
 
-            Set<String> windowHandles = driver.getWindowHandles();
+            Set<String> windowHandles = context.getDriver().getWindowHandles();
             if (windowHandles.isEmpty()) {
                 throw new CommandException(String.format("Line %s: No windows are currently open", lineNumber));
             }
@@ -73,15 +70,15 @@ public class SwitchToWindowCommand implements Command {
                             "Line %s: Window index %d is out of range. Available windows: %d",
                             lineNumber, index, handlesList.size()));
                 }
-                driver.switchTo().window(handlesList.get(index));
+                context.getDriver().switchTo().window(handlesList.get(index));
                 log.info(String.format("Switched to window at index: %s", index));
                 return;
             } catch (NumberFormatException e) {
                 // Not an integer, try to find window by title/name
                 boolean windowFound = false;
                 for (String handle : handlesList) {
-                    driver.switchTo().window(handle);
-                    if (Objects.equals(driver.getTitle(), windowIdentifier)) {
+                    context.getDriver().switchTo().window(handle);
+                    if (Objects.equals(context.getDriver().getTitle(), windowIdentifier)) {
                         windowFound = true;
                         log.info(String.format("Successfully switched to window with title: %s", windowIdentifier));
                         break;

@@ -23,7 +23,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  * The SelectCommand class represents a command to select an option from a dropdown element.
  * This command supports selection by visible text, value attribute, and index.
  */
-public class SelectCommand implements Command {
+public class SelectCommand {
     private static final LithiumLogger log = LithiumLogger.getInstance();
     private Locator locator;
     private final String optionText;
@@ -82,7 +82,7 @@ public class SelectCommand implements Command {
      * @param wait The WebDriverWait instance used to wait for the element.
      * @param context The TestContext instance containing test execution context.
      */
-    @Override
+
     public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
         try {
             locator = new Locator(locator.getType(), context.resolveVariables(locator.getValue()));

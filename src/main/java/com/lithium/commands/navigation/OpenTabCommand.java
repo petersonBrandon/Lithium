@@ -11,6 +11,7 @@ package com.lithium.commands.navigation;
 
 import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
+import com.lithium.core.TestRunner;
 import com.lithium.exceptions.CommandException;
 import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.JavascriptExecutor;
@@ -46,14 +47,10 @@ public class OpenTabCommand implements Command {
     /**
      * Executes the command to open a new tab and navigate to the specified URL.
      *
-     * @param driver  The WebDriver instance used to control the browser.
-     * @param wait    The WebDriverWait instance for handling timing.
      * @param context The TestContext instance for variable resolution.
      */
     @Override
-    public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
-        url = context.resolveVariables(url);
-
+    public void execute(TestRunner.ExecutionContext context) {
         if (url == null || url.trim().isEmpty()) {
             throw new IllegalArgumentException(String.format("Line %s: URL cannot be null or empty", lineNumber));
         }
@@ -63,19 +60,19 @@ public class OpenTabCommand implements Command {
             validateUrl(url);
 
             // Store the current window handle
-            String originalWindow = driver.getWindowHandle();
+            String originalWindow = context.getDriver().getWindowHandle();
 
             // Open new tab using JavaScript
-            JavascriptExecutor js = (JavascriptExecutor) driver;
+            JavascriptExecutor js = (JavascriptExecutor) context.getDriver();
             js.executeScript("window.open()");
 
             // Switch to the new tab (it will be the last window handle)
-            ArrayList<String> tabs = new ArrayList<>(driver.getWindowHandles());
+            ArrayList<String> tabs = new ArrayList<>(context.getDriver().getWindowHandles());
             String newTab = tabs.getLast();
-            driver.switchTo().window(newTab);
+            context.getDriver().switchTo().window(newTab);
 
             // Navigate to the URL
-            driver.get(url);
+            context.getDriver().get(url);
             log.info(String.format("Opened new tab and navigated to: %s", url));
 
         } catch (TimeoutException e) {

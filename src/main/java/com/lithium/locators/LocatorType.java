@@ -23,7 +23,7 @@ public enum LocatorType {
     PARTIAL_LINK_TEXT("partialLink"),
     TAG_NAME("tag");
 
-    public final String prefix;
+    public final String value;
 
     /**
      * Constructor for the LocatorType enum.
@@ -31,7 +31,7 @@ public enum LocatorType {
      * @param prefix The prefix associated with the locator type (e.g., "css", "xpath").
      */
     LocatorType(String prefix) {
-        this.prefix = prefix;
+        this.value = prefix;
     }
 
     /**
@@ -43,10 +43,19 @@ public enum LocatorType {
      */
     public static LocatorType fromPrefix(String prefix) {
         for (LocatorType type : values()) {
-            if (type.prefix.equalsIgnoreCase(prefix)) {
+            if (type.value.equalsIgnoreCase(prefix)) {
                 return type;
             }
         }
         throw new IllegalArgumentException("Unknown locator type: " + prefix);
+    }
+
+    public static LocatorType fromString(String type) {
+        for (LocatorType locatorType : values()) {
+            if (locatorType.value.equalsIgnoreCase(type)) {
+                return locatorType;
+            }
+        }
+        throw new IllegalArgumentException("Unknown locator type: " + type);
     }
 }

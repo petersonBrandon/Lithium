@@ -11,6 +11,7 @@ package com.lithium.commands.navigation;
 
 import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
+import com.lithium.core.TestRunner;
 import com.lithium.exceptions.CommandException;
 import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.WebDriver;
@@ -26,9 +27,9 @@ public class ForwardCommand implements Command {
     }
 
     @Override
-    public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
+    public void execute(TestRunner.ExecutionContext context) {
         try {
-            driver.navigate().forward();
+            context.getDriver().navigate().forward();
             log.info("Navigated forward");
         } catch (WebDriverException e) {
             throw new CommandException(String.format("Line %s: Failed to navigate forward in browser history", lineNumber));

@@ -11,6 +11,7 @@ package com.lithium.commands.navigation;
 
 import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
+import com.lithium.core.TestRunner;
 import com.lithium.exceptions.CommandException;
 import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.WebDriver;
@@ -26,9 +27,9 @@ public class RefreshCommand implements Command {
     }
 
     @Override
-    public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
+    public void execute(TestRunner.ExecutionContext context) {
         try {
-            driver.navigate().refresh();
+            context.getDriver().navigate().refresh();
             log.info("Refreshed page");
         } catch (WebDriverException e) {
             throw new CommandException(String.format("Line %s: Failed to refresh page", lineNumber));

@@ -11,6 +11,7 @@ package com.lithium.commands.interaction.basic;
 
 import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
+import com.lithium.core.TestRunner;
 import com.lithium.exceptions.CommandException;
 import com.lithium.locators.Locator;
 import com.lithium.util.logger.LithiumLogger;
@@ -41,15 +42,12 @@ public class ClearCommand implements Command {
     /**
      * Executes the clear action on the web element identified by the locator.
      *
-     * @param driver The WebDriver instance used to interact with the web page.
-     * @param wait The WebDriverWait instance used to wait for the element to become interactive.
      * @param context The TestContext instance containing test execution context.
      */
     @Override
-    public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
+    public void execute(TestRunner.ExecutionContext context) {
         try {
-            locator = new Locator(locator.getType(), context.resolveVariables(locator.getValue()));
-            WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator.toSeleniumBy()));
+            WebElement element = context.getWait().until(ExpectedConditions.elementToBeClickable(locator.toSeleniumBy()));
             element.clear();
             log.info(String.format("Cleared element: %s", locator));
         } catch (NoSuchElementException e) {

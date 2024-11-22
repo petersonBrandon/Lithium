@@ -11,6 +11,7 @@ package com.lithium.commands.navigation;
 
 import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
+import com.lithium.core.TestRunner;
 import com.lithium.exceptions.CommandException;
 import com.lithium.util.logger.LithiumLogger;
 import org.openqa.selenium.NoSuchWindowException;
@@ -51,28 +52,23 @@ public class CloseTabCommand implements Command {
     /**
      * Executes the command to close the specified tab or current tab.
      *
-     * @param driver  The WebDriver instance used to control the browser.
-     * @param wait    The WebDriverWait instance for handling timing.
      * @param context The TestContext instance for variable resolution.
      */
     @Override
-    public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
+    public void execute(TestRunner.ExecutionContext context) {
         try {
-            Set<String> windowHandles = driver.getWindowHandles();
+            Set<String> windowHandles = context.getDriver().getWindowHandles();
 
             if (windowHandles.isEmpty()) {
                 throw new CommandException(String.format("Line %s: No windows are currently open", lineNumber));
             }
 
-            String currentHandle = driver.getWindowHandle();
+            String currentHandle = context.getDriver().getWindowHandle();
             String handleToClose = currentHandle;
 
             // If a window identifier is specified, find the corresponding handle
             if (windowIdentifier != null) {
-                windowIdentifier = context.resolveVariables(windowIdentifier);
-                String resolvedIdentifier = context.resolveVariables(windowIdentifier);
-
-                if (resolvedIdentifier.trim().isEmpty()) {
+                if (windowIdentifier.trim().isEmpty()) {
                     throw new IllegalArgumentException(String.format("Line %s: Window identifier cannot be empty", lineNumber));
                 }
 
@@ -80,7 +76,7 @@ public class CloseTabCommand implements Command {
 
                 // Try to parse as integer first (window index)
                 try {
-                    int index = Integer.parseInt(resolvedIdentifier) - 1;
+                    int index = Integer.parseInt(windowIdentifier) - 1;
                     if (index < 0 || index >= handlesList.size()) {
                         throw new CommandException(String.format(
                                 "Line %s: Window index %d is out of range. Available windows: %d",
@@ -91,30 +87,30 @@ public class CloseTabCommand implements Command {
                     // Not an integer, try to find window by title
                     boolean windowFound = false;
                     for (String handle : handlesList) {
-                        String originalHandle = driver.getWindowHandle();
-                        driver.switchTo().window(handle);
-                        if (Objects.equals(driver.getTitle(), resolvedIdentifier)) {
+                        String originalHandle = context.getDriver().getWindowHandle();
+                        context.getDriver().switchTo().window(handle);
+                        if (Objects.equals(context.getDriver().getTitle(), windowIdentifier)) {
                             handleToClose = handle;
                             windowFound = true;
                             // Switch back to original window if we're not closing it
                             break;
                         }
-                        driver.switchTo().window(originalHandle);
+                        context.getDriver().switchTo().window(originalHandle);
                     }
                     if (!windowFound) {
                         throw new CommandException(String.format(
-                                "Line %s: No window found with title: %s", lineNumber, resolvedIdentifier));
+                                "Line %s: No window found with title: %s", lineNumber, windowIdentifier));
                     }
                 }
             }
 
             // Switch to the window we want to close if it's not the current one
             if (!handleToClose.equals(currentHandle)) {
-                driver.switchTo().window(handleToClose);
+                context.getDriver().switchTo().window(handleToClose);
             }
 
             // Close the window
-            driver.close();
+            context.getDriver().close();
             if(windowIdentifier != null) {
                 log.info(String.format("Successfully closed window %s", windowIdentifier));
             } else {
@@ -122,11 +118,11 @@ public class CloseTabCommand implements Command {
             }
 
             // Switch to the last remaining window if there are any
-            Set<String> remainingHandles = driver.getWindowHandles();
+            Set<String> remainingHandles = context.getDriver().getWindowHandles();
             if (!remainingHandles.isEmpty()) {
                 ArrayList<String> handlesList = new ArrayList<>(remainingHandles);
                 String newHandle = handlesList.getLast();
-                driver.switchTo().window(newHandle);
+                context.getDriver().switchTo().window(newHandle);
                 log.info("Switched to remaining window");
             } else {
                 log.info("No remaining windows open");

@@ -56,7 +56,7 @@ public class Locator {
      */
     @Override
     public String toString() {
-        return type.prefix + " \"" + value + "\"";
+        return type.value + " \"" + value + "\"";
     }
 
     /**

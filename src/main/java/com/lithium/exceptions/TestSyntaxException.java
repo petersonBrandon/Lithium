@@ -14,25 +14,13 @@ package com.lithium.exceptions;
  * It includes the line number where the syntax error occurred, which helps in identifying the source of the error.
  */
 public class TestSyntaxException extends Exception {
-    private final int lineNumber;
 
     /**
      * Constructs a new TestSyntaxException with a specified error message and line number.
      *
      * @param message    The detail message describing the syntax error.
-     * @param lineNumber The line number in the test file where the syntax error occurred.
      */
-    public TestSyntaxException(String message, int lineNumber) {
-        super(String.format("Line %d: %s", lineNumber, message));
-        this.lineNumber = lineNumber;
-    }
-
-    /**
-     * Gets the line number where the syntax error occurred.
-     *
-     * @return The line number of the syntax error.
-     */
-    public int getLineNumber() {
-        return lineNumber;
+    public TestSyntaxException(String message) {
+        super(message);
     }
 }

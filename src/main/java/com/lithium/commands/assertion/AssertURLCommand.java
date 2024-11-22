@@ -11,6 +11,7 @@ package com.lithium.commands.assertion;
 
 import com.lithium.commands.Command;
 import com.lithium.core.TestContext;
+import com.lithium.core.TestRunner;
 import com.lithium.exceptions.AssertionFailedException;
 import com.lithium.exceptions.CommandException;
 import com.lithium.util.logger.LithiumLogger;
@@ -39,15 +40,12 @@ public class AssertURLCommand implements Command {
     /**
      * Execute the URL assertion of current URL to expected.
      *
-     * @param driver The WebDriver instance used to execute the command.
-     * @param wait   The WebDriverWait instance used for managing wait conditions.
      * @param context The test context for resolving possible variables in the expected URL.
      */
     @Override
-    public void execute(WebDriver driver, WebDriverWait wait, TestContext context) {
+    public void execute(TestRunner.ExecutionContext context) {
         try {
-            String currentUrl = driver.getCurrentUrl();
-            expectedUrl = context.resolveVariables(expectedUrl);
+            String currentUrl = context.getDriver().getCurrentUrl();
 
             assert currentUrl != null;
             if(!currentUrl.equals(expectedUrl)) {
