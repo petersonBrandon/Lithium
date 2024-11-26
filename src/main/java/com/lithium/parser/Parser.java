@@ -164,18 +164,52 @@ public class Parser {
 
     // Parse for statements
     private Stmt.For forStatement() {
-        Token variable = consume(TokenType.IDENTIFIER, "Expect variable name in for loop.");
-        consume(TokenType.IDENTIFIER, "Expect 'in' after loop variable.");
-
-        if (!previous().getLexeme().equals("in")) {
-            throw error(previous(), "Expected 'in' keyword.");
+        // Check if this is a range-based for loop
+        if (match(TokenType.IDENTIFIER) && peek().getLexeme().equals("in")) {
+            Token variable = previous();
+            advance(); // consume 'in'
+            Expr range = rangeExpression();
+            consume(TokenType.LEFT_BRACE, "Expect '{' after for loop range.");
+            List<Stmt> body = block();
+            return new Stmt.For(variable, range, body);
         }
 
-        Expr range = rangeExpression();
-        consume(TokenType.LEFT_BRACE, "Expect '{' after for loop range.");
+        // Traditional C-style for loop
+        consume(TokenType.LEFT_PAREN, "Expect '(' after 'for'.");
+
+        // Store line and column for error reporting
+        int line = previous().getLine();
+        int column = previous().getColumn();
+
+        // Initialization (optional)
+        Stmt initialization = null;
+        if (!match(TokenType.SEMICOLON)) {
+            if (match(TokenType.SET)) {
+                initialization = varDeclaration();
+            } else {
+                initialization = expressionStatement();
+            }
+        }
+
+        // Condition (optional)
+        Expr condition = null;
+        if (!check(TokenType.SEMICOLON)) {
+            condition = expression();
+        }
+        consume(TokenType.SEMICOLON, "Expect ';' after loop condition.");
+
+        // Increment (optional)
+        Expr increment = null;
+        if (!check(TokenType.RIGHT_PAREN)) {
+            increment = expression();
+        }
+
+        consume(TokenType.RIGHT_PAREN, "Expect ')' after for clauses.");
+        consume(TokenType.LEFT_BRACE, "Expect '{' after for loop.");
+
         List<Stmt> body = block();
 
-        return new Stmt.For(variable, range, body);
+        return new Stmt.For(initialization, condition, increment, body, line, column);
     }
 
     // Parse range expressions (e.g., 1..5)

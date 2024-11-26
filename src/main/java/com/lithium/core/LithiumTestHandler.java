@@ -247,26 +247,58 @@ public class LithiumTestHandler implements AutoCloseable {
     }
 
     private void handleForStatement(Stmt.For forStmt) {
-        // Implement range-based or iterable-based iteration
-        Expr.Range rangeExpr = (Expr.Range) forStmt.range;
-        int start = (Integer) interpreter.evaluate(rangeExpr.start);
-        int end = (Integer) interpreter.evaluate(rangeExpr.end);
+        if (forStmt.isRangeBased) {
+            // Existing range-based for loop logic
+            Expr.Range rangeExpr = (Expr.Range) forStmt.range;
+            int start = (Integer) interpreter.evaluate(rangeExpr.start);
+            int end = (Integer) interpreter.evaluate(rangeExpr.end);
 
-        for (int i = start; i <= end; i++) {
-            // Set loop variable
-            globalVariables.put(forStmt.variable.getLexeme(), i);
+            for (int i = start; i <= end; i++) {
+                // Set loop variable
+                globalVariables.put(forStmt.variable.getLexeme(), i);
 
-            for (Stmt stmt : forStmt.body) {
-                processStatement(stmt);
+                for (Stmt stmt : forStmt.body) {
+                    processStatement(stmt);
 
-                if (isReturning) return;
-                if (isBreaking) {
-                    isBreaking = false;
-                    return;
+                    if (isReturning) return;
+                    if (isBreaking) {
+                        isBreaking = false;
+                        return;
+                    }
+                    if (isContinuing) {
+                        isContinuing = false;
+                        break;  // Break inner loop to continue for loop
+                    }
                 }
-                if (isContinuing) {
-                    isContinuing = false;
-                    break;  // Break inner loop to continue for loop
+            }
+        } else {
+            // Traditional C-style for loop
+            // Execute initialization
+            if (forStmt.initialization != null) {
+                processStatement(forStmt.initialization);
+            }
+
+            // Continue loop while condition is true (or indefinitely if no condition)
+            while (forStmt.condition == null ||
+                    (Boolean) interpreter.evaluate(forStmt.condition)) {
+
+                for (Stmt stmt : forStmt.body) {
+                    processStatement(stmt);
+
+                    if (isReturning) return;
+                    if (isBreaking) {
+                        isBreaking = false;
+                        return;
+                    }
+                    if (isContinuing) {
+                        isContinuing = false;
+                        break;  // Break inner loop to continue for loop
+                    }
+                }
+
+                // Execute increment
+                if (forStmt.increment != null) {
+                    interpreter.evaluate(forStmt.increment);
                 }
             }
         }

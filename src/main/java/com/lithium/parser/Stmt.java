@@ -67,13 +67,34 @@ public abstract class Stmt extends Node {
     public static class For extends Stmt {
         public final Token variable;
         public final Expr range;
+        public final Stmt initialization;  // for traditional loops
+        public final Expr condition;       // for traditional loops
+        public final Expr increment;       // for traditional loops
         public final List<Stmt> body;
+        public final boolean isRangeBased;
 
+        // Constructor for range-based for loop
         For(Token variable, Expr range, List<Stmt> body) {
             super(variable.getLine(), variable.getColumn());
             this.variable = variable;
             this.range = range;
+            this.initialization = null;
+            this.condition = null;
+            this.increment = null;
             this.body = body;
+            this.isRangeBased = true;
+        }
+
+        // Constructor for traditional for loop
+        For(Stmt initialization, Expr condition, Expr increment, List<Stmt> body, int line, int column) {
+            super(line, column);
+            this.variable = null;
+            this.range = null;
+            this.initialization = initialization;
+            this.condition = condition;
+            this.increment = increment;
+            this.body = body;
+            this.isRangeBased = false;
         }
     }
 
